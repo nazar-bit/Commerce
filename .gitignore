@@ -1,0 +1,7 @@
+# Ignore backend compiled files
+backend/target/
+backend/.mvn/
+
+# Ignore IntelliJ project files
+.idea/
+*.iml
