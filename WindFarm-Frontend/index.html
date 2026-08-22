@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Task List — REST demo</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 40px auto; }
+    li { display: flex; justify-content: space-between; padding: 6px 0; }
+    button.delete { background: none; border: none; color: red; cursor: pointer; }
+    #status { color: gray; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h1>Tasks</h1>
+  <p id="status">Loading...</p>
+
+  <ul id="taskList"></ul>
+
+  <input id="taskInput" placeholder="New task" />
+  <button onclick="addTask()">Add</button>
+
+  <script>
+    // Change this if your backend runs on a different port,
+    // or point it at your Azure URL once deployed.
+    const API_URL = 'http://localhost:8080/api/tasks';
+
+    async function loadTasks() {
+      const status = document.getElementById('status');
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error('Server responded with ' + res.status);
+
+        const task = await res.text();
+        document.getElementById('taskList').textContent = task;
+        status.textContent = '';
+      } catch (err) {
+        status.textContent = 'Could not reach backend: ' + err.message;
+      }
+    }
+
+    function renderTasks(tasks) {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+
+        const text = document.createElement('span');
+        text.textContent = task.title;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'x';
+        deleteBtn.className = 'delete';
+        deleteBtn.onclick = () => deleteTask(task.id);
+
+        li.appendChild(text);
+        li.appendChild(deleteBtn);
+        list.appendChild(li);
+      });
+    }
+
+    async function addTask() {
+      const input = document.getElementById('taskInput');
+      const title = input.value.trim();
+      if (!title) return;
+
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: title
+      });
+
+      input.value = '';
+      loadTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      loadTasks();
+    }
+
+    // Load tasks as soon as the page opens
+    loadTasks();
+  </script>
+</body>
+</html>
+
