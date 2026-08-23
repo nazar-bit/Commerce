@@ -1,0 +1,12 @@
+package pjv.hello.vasylnaz.windfarmbackend.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import pjv.hello.vasylnaz.windfarmbackend.entity.Category;
+
+import java.util.Optional;
+
+public interface CategoryRepository extends JpaRepository<Category, Long> {
+    boolean existsByName(String name);
+
+    Optional<Category> findByName(String name);
+}

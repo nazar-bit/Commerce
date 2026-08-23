@@ -14,8 +14,8 @@ public class Category {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "super_category_id", nullable = false)
-    private Category superCategoryId;
+    @JoinColumn(name = "super_category_id")
+    private Category superCategory;
 
     // Getters and setters
 
@@ -33,5 +33,13 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Category getSuperCategory() {
+        return superCategory;
+    }
+
+    public void setSuperCategory(Category superCategory) {
+        this.superCategory = superCategory;
     }
 }
