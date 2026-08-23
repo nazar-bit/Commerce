@@ -7,10 +7,10 @@ import jakarta.persistence.*;
 public class OrderItem {
 
     @Id
-    private Long instanceId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instance_id", nullable = false)
     private ProductInstance productInstance;
 
@@ -23,8 +23,12 @@ public class OrderItem {
 
     // Getters and setters
 
-    public Long getInstanceId() {
-        return instanceId;
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public ProductInstance getProductInstance() {

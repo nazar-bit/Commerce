@@ -13,14 +13,14 @@ public class Order {
     private Long id;
 
     @Column(nullable = false)
-    private String status;
+    private OrderStatus status;
 
     @Column(nullable = false)
     private LocalDateTime date;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
-    Customer customer;
+    Account account;
 
     // Getters and setters
 
@@ -32,11 +32,11 @@ public class Order {
         this.id = id;
     }
 
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
@@ -48,11 +48,11 @@ public class Order {
         this.date = date;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public Account getCustomer() {
+        return account;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setCustomer(Account account) {
+        this.account = account;
     }
 }

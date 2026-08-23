@@ -3,6 +3,7 @@ package pjv.hello.vasylnaz.windfarmbackend.service;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductInstancesRequest;
+import pjv.hello.vasylnaz.windfarmbackend.entity.InstanceStatus;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
 import pjv.hello.vasylnaz.windfarmbackend.entity.ProductInstance;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductInstanceRepository;
@@ -26,6 +27,7 @@ public class ProductInstanceService {
         for (int i = 0; i < quantity; i++) {
             ProductInstance instance = new ProductInstance();
             instance.setProduct(product);
+            instance.setStatus(InstanceStatus.AVAILABLE);
             instances.add(instance);
         }
 

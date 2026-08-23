@@ -3,24 +3,29 @@ package pjv.hello.vasylnaz.windfarmbackend.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "customers")
-public class Customer {
-
+@Table(name = "accounts")
+public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private Role role;
+
     @Column(name = "first_name", nullable = false)
-    String firstName;
+    private String firstName;
 
     @Column(name = "last_name", nullable = false)
-    String lastName;
-
-    @Column(unique = true, nullable = false)
-    String email;
+    private String lastName;
 
     @Column(name = "phone_number", unique = true)
-    String phoneNumber;
+    private String phoneNumber;
 
     // Getters and setters
 
@@ -62,5 +67,21 @@ public class Customer {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

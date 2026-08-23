@@ -10,6 +10,9 @@ public class ProductInstance {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(name = "status", nullable = false)
+    private InstanceStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -30,5 +33,13 @@ public class ProductInstance {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public InstanceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(InstanceStatus status) {
+        this.status = status;
     }
 }
