@@ -33,7 +33,7 @@ public class OrderItemService {
     }
 
     @Transactional
-    public void orderItems(OrderItemsRequest request){
+    public List<OrderItem> orderItems(OrderItemsRequest request){
         double price = productRepository.findById(request.productId())
             .orElseThrow(() -> new RuntimeException("Product not found"))
             .getPrice();
@@ -53,6 +53,6 @@ public class OrderItemService {
             items.add(orderItem);
         }
 
-        orderItemRepository.saveAll(items);
+        return orderItemRepository.saveAll(items);
     }
 }

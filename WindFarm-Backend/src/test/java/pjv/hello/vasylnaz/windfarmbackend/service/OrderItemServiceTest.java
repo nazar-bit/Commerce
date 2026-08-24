@@ -8,16 +8,11 @@ import pjv.hello.vasylnaz.windfarmbackend.dto.CreateOrderRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductInstancesRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.OrderItemsRequest;
-import pjv.hello.vasylnaz.windfarmbackend.entity.Account;
-import pjv.hello.vasylnaz.windfarmbackend.entity.OrderStatus;
-import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
-import pjv.hello.vasylnaz.windfarmbackend.entity.Role;
-import pjv.hello.vasylnaz.windfarmbackend.repository.AccountRepository;
-import pjv.hello.vasylnaz.windfarmbackend.repository.OrderItemRepository;
-import pjv.hello.vasylnaz.windfarmbackend.repository.OrderRepository;
-import pjv.hello.vasylnaz.windfarmbackend.repository.ProductRepository;
+import pjv.hello.vasylnaz.windfarmbackend.entity.*;
+import pjv.hello.vasylnaz.windfarmbackend.repository.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
@@ -40,10 +35,7 @@ public class OrderItemServiceTest {
     private OrderItemRepository orderItemRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
+    private ProductInstanceRepository productInstanceRepository;
 
 
     @Test
@@ -55,7 +47,7 @@ public class OrderItemServiceTest {
                 "http://www.example.com",
                 1200.00
         );
-        productService.addProduct(requestProd);
+        Product product = productService.addProduct(requestProd);
         // Create 12 instances
         productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
 
@@ -74,18 +66,162 @@ public class OrderItemServiceTest {
                 saved.getId()
         );
 
-        orderService.createOrder(createOrderRequest);
+        Order order = orderService.createOrder(createOrderRequest);
 
         // Add one instance to OrderItem
         OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
-                orderRepository.findOrderByAccountIdAndStatus(saved.getId(), OrderStatus.IN_PROGRESS).get().getId(),
-                productRepository.findByName("Test").get().getId(),
+                order.getId(),
+                product.getId(),
                 1
         );
 
         orderItemService.orderItems(orderItemsRequest);
 
-        // Assert
+        // Assert that OrderItem was created
         assertEquals(1, orderItemRepository.count());
+        // Assert that Reserved status was added
+        assertEquals(1, productInstanceRepository.countByProductNameAndStatus("Test", InstanceStatus.RESERVED));
+    }
+
+
+    @Test
+    public void orderOneItemWithCorrectProductAndInCorrectOrder() {
+        // Create new Product
+        CreateProductRequest requestProd = new CreateProductRequest(
+                "Test",
+                "A powerful testing machine",
+                "http://www.example.com",
+                1200.00
+        );
+        Product product = productService.addProduct(requestProd);
+        // Create 12 instances
+        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+
+        // Add one instance to OrderItem
+        OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
+                -10000L,
+                product.getId(),
+                1
+        );
+
+        assertThrows(RuntimeException.class, () -> orderItemService.orderItems(orderItemsRequest));
+    }
+
+
+    @Test
+    public void orderOneItemWithInCorrectProductAndCorrectOrder() {
+        // Create new Account
+        Account account = new Account();
+        account.setEmail("test@gmail.com");
+        account.setPassword("bad");
+        account.setFirstName("Test");
+        account.setLastName("Tester");
+        account.setRole(Role.CUSTOMER);
+
+        Account saved = accountRepository.save(account);
+
+        // Create new empty order
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                saved.getId()
+        );
+
+        Order order = orderService.createOrder(createOrderRequest);
+
+        // Add one instance to OrderItem
+        OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
+                order.getId(),
+                -10000L,
+                1
+        );
+
+        assertThrows(RuntimeException.class, () -> orderItemService.orderItems(orderItemsRequest));
+    }
+
+
+    @Test
+    public void orderTenItemWithCorrectProductAndCorrectOrder() {
+        // Create new Product
+        CreateProductRequest requestProd = new CreateProductRequest(
+                "Test",
+                "A powerful testing machine",
+                "http://www.example.com",
+                1200.00
+        );
+        Product product = productService.addProduct(requestProd);
+        // Create 12 instances
+        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+
+        // Create new Account
+        Account account = new Account();
+        account.setEmail("test@gmail.com");
+        account.setPassword("bad");
+        account.setFirstName("Test");
+        account.setLastName("Tester");
+        account.setRole(Role.CUSTOMER);
+
+        Account saved = accountRepository.save(account);
+
+        // Create new empty order
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                saved.getId()
+        );
+
+        Order order = orderService.createOrder(createOrderRequest);
+
+        // Add one instance to OrderItem
+        OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
+                order.getId(),
+                product.getId(),
+                10
+        );
+
+        orderItemService.orderItems(orderItemsRequest);
+
+        // Assert that OrderItem was created
+        assertEquals(10, orderItemRepository.count());
+        // Assert that Reserved status was added
+        assertEquals(10, productInstanceRepository.countByProductNameAndStatus("Test", InstanceStatus.RESERVED));
+    }
+
+
+    @Test
+    public void orderTwentyItemWithCorrectProductAndCorrectOrder() {
+        // Create new Product
+        CreateProductRequest requestProd = new CreateProductRequest(
+                "Test",
+                "A powerful testing machine",
+                "http://www.example.com",
+                1200.00
+        );
+        Product product = productService.addProduct(requestProd);
+        // Create 12 instances
+        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+
+        // Create new Account
+        Account account = new Account();
+        account.setEmail("test@gmail.com");
+        account.setPassword("bad");
+        account.setFirstName("Test");
+        account.setLastName("Tester");
+        account.setRole(Role.CUSTOMER);
+
+        Account saved = accountRepository.save(account);
+
+        // Create new empty order
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                saved.getId()
+        );
+
+        Order order = orderService.createOrder(createOrderRequest);
+
+        // Add one instance to OrderItem
+        OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
+                order.getId(),
+                product.getId(),
+                20
+        );
+
+
+        assertThrows(RuntimeException.class, () -> orderItemService.orderItems(orderItemsRequest));
     }
 }

@@ -17,7 +17,7 @@ public class OrderItem {
     @Column(name = "price_at_purchase", nullable = false)
     private double priceAtPurchase;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 

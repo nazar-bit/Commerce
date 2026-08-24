@@ -21,4 +21,6 @@ public interface ProductInstanceRepository extends JpaRepository<ProductInstance
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<ProductInstance> findByProductIdAndStatus(Long productId, InstanceStatus status, Pageable pageable);
+
+    Long countByProductNameAndStatus(String productName, InstanceStatus status);
 }

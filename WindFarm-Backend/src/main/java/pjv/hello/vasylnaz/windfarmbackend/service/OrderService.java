@@ -23,7 +23,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void createOrder(CreateOrderRequest request) {
+    public Order createOrder(CreateOrderRequest request) {
         if(orderRepository.existsByAccountIdAndStatus(request.accountId(), OrderStatus.IN_PROGRESS)) {
             throw new RuntimeException("User already has an active order");
         }
@@ -34,6 +34,6 @@ public class OrderService {
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus(OrderStatus.IN_PROGRESS);
 
-        orderRepository.save(order);
+        return orderRepository.save(order);
     }
 }

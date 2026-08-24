@@ -19,7 +19,7 @@ public class AccountService {
     }
 
     @Transactional
-    public void registerAccount(RegisterRequest request) {
+    public Account registerAccount(RegisterRequest request) {
         if(accountRepository.existsByEmail(request.email())){
             throw new RuntimeException("Email already in use");
         }
@@ -41,6 +41,6 @@ public class AccountService {
             account.setPhoneNumber(request.phoneNumber());
         }
 
-        accountRepository.save(account);
+        return accountRepository.save(account);
     }
 }

@@ -18,7 +18,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public void addCategory(CreateCategoryRequest request) {
+    public Category addCategory(CreateCategoryRequest request) {
         if(categoryRepository.existsByName(request.name())){
             throw new RuntimeException("Category name already exists");
         }
@@ -33,6 +33,6 @@ public class CategoryService {
             category.setSuperCategory(superCategory);
         }
 
-        categoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 }

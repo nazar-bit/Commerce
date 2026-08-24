@@ -26,7 +26,7 @@ public class ProductInstanceService {
     }
 
     @Transactional
-    public void createNewInstances(Product product, int quantity){
+    public List<ProductInstance> createNewInstances(Product product, int quantity){
         List<ProductInstance> instances = new ArrayList<>();
 
         for (int i = 0; i < quantity; i++) {
@@ -36,7 +36,7 @@ public class ProductInstanceService {
             instances.add(instance);
         }
 
-        productInstanceRepository.saveAll(instances);
+        return productInstanceRepository.saveAll(instances);
     }
 
     @Transactional
