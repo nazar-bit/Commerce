@@ -3,6 +3,7 @@ package pjv.hello.vasylnaz.windfarmbackend.service;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import pjv.hello.vasylnaz.windfarmbackend.dto.OrderItemsRequest;
+import pjv.hello.vasylnaz.windfarmbackend.entity.InstanceStatus;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Order;
 import pjv.hello.vasylnaz.windfarmbackend.entity.OrderItem;
 import pjv.hello.vasylnaz.windfarmbackend.entity.ProductInstance;
@@ -54,5 +55,15 @@ public class OrderItemService {
         }
 
         return orderItemRepository.saveAll(items);
+    }
+
+
+    @Transactional
+    public void releaseInstances(Long orderId) {
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+
+        for(OrderItem item : items) {
+            item.getProductInstance().setStatus(InstanceStatus.AVAILABLE);
+        }
     }
 }
