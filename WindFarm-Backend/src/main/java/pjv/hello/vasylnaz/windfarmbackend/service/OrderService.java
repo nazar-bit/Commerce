@@ -2,7 +2,7 @@ package pjv.hello.vasylnaz.windfarmbackend.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import pjv.hello.vasylnaz.windfarmbackend.dto.CancelOrderRequest;
+import pjv.hello.vasylnaz.windfarmbackend.dto.OrderRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateOrderRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Order;
 import pjv.hello.vasylnaz.windfarmbackend.entity.OrderStatus;
@@ -43,7 +43,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order cancelOrder(CancelOrderRequest request) {
+    public Order cancelOrder(OrderRequest request) {
         Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         if(!order.getStatus().equals(OrderStatus.IN_PROGRESS)) {
@@ -51,6 +51,43 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.CANCELLED);
+        order.setResolvedAt(LocalDateTime.now());
+        orderItemService.releaseInstances(order.getId());
+
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order completeOrder(OrderRequest request) {
+        Order order = orderRepository.findById(request.orderId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        if(!order.getStatus().equals(OrderStatus.IN_PROGRESS)) {
+            throw new RuntimeException("Order is not in progress");
+        }
+
+        order.setStatus(OrderStatus.COMPLETED);
+        order.setResolvedAt(LocalDateTime.now());
+        orderItemService.sellInstances(order.getId());
+
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order refundOrder(OrderRequest request) {
+        Order order = orderRepository.findById(request.orderId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        if(!order.getStatus().equals(OrderStatus.COMPLETED)) {
+            throw new RuntimeException("Cannot Refund. Order was not completed");
+        }
+
+        LocalDateTime purchaseDate = order.getResolvedAt();
+        LocalDateTime refundDeadline = purchaseDate.plusDays(30);
+        if (LocalDateTime.now().isAfter(refundDeadline)) {
+            throw new RuntimeException("Refund period has expired. Purchases older than 30 days cannot be refunded.");
+        }
+
+        order.setStatus(OrderStatus.REFUNDED);
+        order.setRefundedAt(LocalDateTime.now());
         orderItemService.releaseInstances(order.getId());
 
         return orderRepository.save(order);

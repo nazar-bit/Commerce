@@ -126,7 +126,7 @@ public class OrderServiceTest {
 
         Order order = orderService.createOrder(createOrderRequest);
 
-        // Add one instance to OrderItem
+        // Add instance to OrderItem
         OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
                 order.getId(),
                 product.getId(),
@@ -136,12 +136,173 @@ public class OrderServiceTest {
         orderItemService.orderItems(orderItemsRequest);
 
         // Cancel order
-        CancelOrderRequest cancelOrderRequest = new CancelOrderRequest(order.getId());
-        order = orderService.cancelOrder(cancelOrderRequest);
+        OrderRequest orderRequest = new OrderRequest(order.getId());
+        order = orderService.cancelOrder(orderRequest);
 
         // Assert
         assertEquals(OrderStatus.CANCELLED, order.getStatus());
         assertEquals(0, productInstanceRepository.countByStatus(InstanceStatus.RESERVED));
         assertEquals(10, orderItemRepository.count());
+    }
+
+
+    @Test
+    public void cancelInvalidOrderTest() {
+        assertThrows(RuntimeException.class,
+                () -> orderService.cancelOrder(new OrderRequest(-1000L)));
+    }
+
+
+    @Test
+    public void completeOrderTest() {
+        // Create new Product
+        CreateProductRequest requestProd = new CreateProductRequest(
+                "Test",
+                "A powerful testing machine",
+                "http://www.example.com",
+                1200.00
+        );
+        Product product = productService.addProduct(requestProd);
+        // Create 12 instances
+        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+
+        // Create new Account
+        Account account = new Account();
+        account.setEmail("test@gmail.com");
+        account.setPassword("bad");
+        account.setFirstName("Test");
+        account.setLastName("Tester");
+        account.setRole(Role.CUSTOMER);
+
+        Account saved = accountRepository.save(account);
+
+        // Create new empty order
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                saved.getId()
+        );
+
+        Order order = orderService.createOrder(createOrderRequest);
+
+        // Add instance to OrderItem
+        OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
+                order.getId(),
+                product.getId(),
+                10
+        );
+
+        orderItemService.orderItems(orderItemsRequest);
+
+        // Complete order
+        OrderRequest orderRequest = new OrderRequest(order.getId());
+        order = orderService.completeOrder(orderRequest);
+
+        // Assert
+        assertEquals(OrderStatus.COMPLETED, order.getStatus());
+        assertEquals(10, productInstanceRepository.countByStatus(InstanceStatus.SOLD));
+        assertEquals(10, orderItemRepository.count());
+    }
+
+
+    @Test
+    public void refundOrderTest() {
+        // Create new Product
+        CreateProductRequest requestProd = new CreateProductRequest(
+                "Test",
+                "A powerful testing machine",
+                "http://www.example.com",
+                1200.00
+        );
+        Product product = productService.addProduct(requestProd);
+        // Create 12 instances
+        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+
+        // Create new Account
+        Account account = new Account();
+        account.setEmail("test@gmail.com");
+        account.setPassword("bad");
+        account.setFirstName("Test");
+        account.setLastName("Tester");
+        account.setRole(Role.CUSTOMER);
+
+        Account saved = accountRepository.save(account);
+
+        // Create new empty order
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                saved.getId()
+        );
+
+        Order order = orderService.createOrder(createOrderRequest);
+
+        // Add instance to OrderItem
+        OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
+                order.getId(),
+                product.getId(),
+                10
+        );
+
+        orderItemService.orderItems(orderItemsRequest);
+
+        // Complete order
+        OrderRequest orderRequest = new OrderRequest(order.getId());
+        order = orderService.completeOrder(orderRequest);
+
+        // Refund Order
+        order = orderService.refundOrder(orderRequest);
+
+        // Assert
+        assertEquals(OrderStatus.REFUNDED, order.getStatus());
+        assertEquals(0, productInstanceRepository.countByStatus(InstanceStatus.SOLD));
+        assertEquals(10, orderItemRepository.count());
+    }
+
+
+    @Test
+    public void refundOrderTestAfter30Days() {
+        // Create new Product
+        CreateProductRequest requestProd = new CreateProductRequest(
+                "Test",
+                "A powerful testing machine",
+                "http://www.example.com",
+                1200.00
+        );
+        Product product = productService.addProduct(requestProd);
+        // Create 12 instances
+        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+
+        // Create new Account
+        Account account = new Account();
+        account.setEmail("test@gmail.com");
+        account.setPassword("bad");
+        account.setFirstName("Test");
+        account.setLastName("Tester");
+        account.setRole(Role.CUSTOMER);
+
+        Account saved = accountRepository.save(account);
+
+        // Create new empty order
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                saved.getId()
+        );
+
+        Order order = orderService.createOrder(createOrderRequest);
+
+        // Add instance to OrderItem
+        OrderItemsRequest orderItemsRequest = new OrderItemsRequest(
+                order.getId(),
+                product.getId(),
+                10
+        );
+
+        orderItemService.orderItems(orderItemsRequest);
+
+        // Complete order
+        OrderRequest orderRequest = new OrderRequest(order.getId());
+        order = orderService.completeOrder(orderRequest);
+        // Subtract 31 days
+        order.setResolvedAt(order.getResolvedAt().minusDays(31));
+        orderRepository.save(order);
+
+        // Refund Order
+        assertThrows(RuntimeException.class, () -> orderService.refundOrder(orderRequest));
     }
 }

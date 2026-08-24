@@ -66,4 +66,14 @@ public class OrderItemService {
             item.getProductInstance().setStatus(InstanceStatus.AVAILABLE);
         }
     }
+
+
+    @Transactional
+    public void sellInstances(Long orderId) {
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+
+        for(OrderItem item : items) {
+            item.getProductInstance().setStatus(InstanceStatus.SOLD);
+        }
+    }
 }
