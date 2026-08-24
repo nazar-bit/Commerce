@@ -3,6 +3,7 @@ package pjv.hello.vasylnaz.windfarmbackend.service;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pjv.hello.vasylnaz.windfarmbackend.dto.AccountResponse;
 import pjv.hello.vasylnaz.windfarmbackend.dto.RegisterRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Account;
 import pjv.hello.vasylnaz.windfarmbackend.repository.AccountRepository;
@@ -42,5 +43,20 @@ public class AccountService {
         }
 
         return accountRepository.save(account);
+    }
+
+
+    public AccountResponse findById(Long id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + id));
+
+        return new AccountResponse(
+            account.getId(),
+            account.getEmail(),
+            account.getFirstName(),
+            account.getLastName(),
+            account.getPhoneNumber(),
+            account.getRole()
+        );
     }
 }
