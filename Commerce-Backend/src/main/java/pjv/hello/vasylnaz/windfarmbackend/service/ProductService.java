@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductInstancesRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductRequest;
+import pjv.hello.vasylnaz.windfarmbackend.dto.ProductResponse;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
 import pjv.hello.vasylnaz.windfarmbackend.entity.ProductInstance;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductRepository;
@@ -42,5 +43,24 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product with this name does not exist\n." +
                         " Cannot create product instances"));
         return productInstanceService.createNewInstances(savedProduct, request.quantity());
+    }
+
+
+    public ProductResponse findProductById(long id) {
+        Product product = productRepository.findById(id).
+                orElseThrow(() -> new RuntimeException("Product with this id does not exist"));
+
+        return mapToResponse(product);
+    }
+
+
+    public ProductResponse mapToResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getImageUrl(),
+                product.getPrice()
+        );
     }
 }

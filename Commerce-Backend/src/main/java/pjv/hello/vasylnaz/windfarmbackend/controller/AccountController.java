@@ -18,16 +18,15 @@ public class AccountController
       this.accountService = accountService;
    }
 
-   @PostMapping("/register")
-   public ResponseEntity<Account> register(@RequestBody RegisterRequest request) {
-
-      Account newAccount = accountService.registerAccount(request);
-      return ResponseEntity.status(HttpStatus.CREATED).body(newAccount);
-   }
-
    @GetMapping("/{id}")
    public ResponseEntity<AccountResponse> getAccount(@PathVariable Long id) {
       AccountResponse account = accountService.findById(id);
       return ResponseEntity.ok(account);
+   }
+
+   @PostMapping("/register")
+   public ResponseEntity<AccountResponse> register(@RequestBody RegisterRequest request) {
+      Account newAccount = accountService.registerAccount(request);
+      return ResponseEntity.status(HttpStatus.CREATED).body(accountService.mapToResponse(newAccount));
    }
 }

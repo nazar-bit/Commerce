@@ -47,16 +47,19 @@ public class AccountService {
 
 
     public AccountResponse findById(Long id) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + id));
+        return mapToResponse(accountRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + id)));
+    }
 
+
+    public AccountResponse mapToResponse(Account account) {
         return new AccountResponse(
-            account.getId(),
-            account.getEmail(),
-            account.getFirstName(),
-            account.getLastName(),
-            account.getPhoneNumber(),
-            account.getRole()
+                account.getId(),
+                account.getEmail(),
+                account.getFirstName(),
+                account.getLastName(),
+                account.getPhoneNumber(),
+                account.getRole()
         );
     }
 }

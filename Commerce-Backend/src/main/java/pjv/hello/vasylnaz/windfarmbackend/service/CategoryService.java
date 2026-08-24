@@ -2,11 +2,10 @@ package pjv.hello.vasylnaz.windfarmbackend.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import pjv.hello.vasylnaz.windfarmbackend.dto.CategoryResponse;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateCategoryRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Category;
 import pjv.hello.vasylnaz.windfarmbackend.repository.CategoryRepository;
-
-import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -34,5 +33,22 @@ public class CategoryService {
         }
 
         return categoryRepository.save(category);
+    }
+
+
+    public CategoryResponse findById(Long id) {
+        Category category = categoryRepository.findById(id)
+            .orElseThrow(()->new RuntimeException("Category not found"));
+
+        return mapToResponse(category);
+    }
+
+
+    public CategoryResponse mapToResponse(Category category) {
+        return new CategoryResponse(
+                category.getId(),
+                category.getName(),
+                category.getSuperCategory().getId()
+        );
     }
 }
