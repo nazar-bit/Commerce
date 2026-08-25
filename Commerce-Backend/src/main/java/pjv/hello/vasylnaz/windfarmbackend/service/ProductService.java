@@ -47,7 +47,10 @@ public class ProductService {
             Category category = categoryRepository.findById(request.categoryId())
                     .orElseThrow(() -> new RuntimeException("Category not found"));
 
-            product.addCategory(category);
+            while (category != null && !product.getCategories().contains(category)) {
+                product.addCategory(category);
+                category = category.getSuperCategory();
+            }
         }
 
         return productRepository.save(product);
@@ -61,7 +64,10 @@ public class ProductService {
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        product.addCategory(category);
+        while (category != null && !product.getCategories().contains(category)) {
+            product.addCategory(category);
+            category = category.getSuperCategory();
+        }
         return productRepository.save(product);
     }
 

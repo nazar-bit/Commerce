@@ -12,17 +12,13 @@
 </head>
 <body>
 
-    <!-- Left Panel: Categories -->
     <div class="panel">
         <h3>Categories</h3>
         <button onclick="renderCategories(null)">Reset to Top Level</button>
         <hr>
-        <div id="category-list">
-            <!-- JavaScript will insert category buttons here -->
-        </div>
+        <div id="category-list"></div>
     </div>
 
-    <!-- Right Panel: Products -->
     <div class="panel" style="width: 500px;">
         <h3>Available Products</h3>
         <div id="product-list">
@@ -31,41 +27,37 @@
     </div>
 
     <script>
-        // Store all categories in memory so we don't have to fetch them on every click
         let allCategories = [];
 
-        // 1. Fetch all categories when the page loads
         window.onload = function() {
             fetch('http://localhost:8080/api/categories')
                 .then(response => response.json())
                 .then(data => {
                     allCategories = data;
-                    // Render the top-level categories (supercategoryId is null)
                     renderCategories(null);
                 })
                 .catch(error => console.error('Error fetching categories:', error));
         };
 
-        // 2. Render categories based on the parent ID
         function renderCategories(parentId) {
             const container = document.getElementById('category-list');
-            container.innerHTML = ''; // Clear existing categories
+            container.innerHTML = ''; 
 
-            // Find categories that match the requested parent ID
-            const subcategories = allCategories.filter(cat => cat.superCategoryId === parentId);
+            const subcategories = allCategories.filter(cat => {
+                // Match the exact JSON key sent by your backend
+                return (cat.superId == null && parentId == null) || cat.superId === parentId;
+            });
 
             if (subcategories.length === 0) {
                 container.innerHTML = '<i>No subcategories available.</i>';
                 return;
             }
 
-            // Create a button for each subcategory
             subcategories.forEach(category => {
                 const btn = document.createElement('button');
                 btn.className = 'item-btn';
                 btn.innerText = category.name;
                 
-                // When clicked, render its subcategories and fetch its products
                 btn.onclick = function() {
                     renderCategories(category.id);
                     fetchProducts(category.id);
@@ -75,7 +67,6 @@
             });
         }
 
-        // 3. Fetch products for a specific category ID from the backend
         function fetchProducts(categoryId) {
             const productContainer = document.getElementById('product-list');
             productContainer.innerHTML = 'Loading...';
@@ -83,14 +74,13 @@
             fetch(`http://localhost:8080/api/products?categoryId=${categoryId}`)
                 .then(response => response.json())
                 .then(products => {
-                    productContainer.innerHTML = ''; // Clear loading text
+                    productContainer.innerHTML = ''; 
 
-                    if (products.length === 0) {
+                    if (!products || products.length === 0) {
                         productContainer.innerHTML = '<i>No products in this category.</i>';
                         return;
                     }
 
-                    // Create a card for each product
                     products.forEach(product => {
                         const div = document.createElement('div');
                         div.className = 'product-card';
@@ -104,7 +94,7 @@
                 })
                 .catch(error => {
                     productContainer.innerHTML = 'Error loading products.';
-                    console.error(error);
+                    console.error('Error fetching products:', error);
                 });
         }
     </script>
