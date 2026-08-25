@@ -2,8 +2,9 @@ package pjv.hello.vasylnaz.windfarmbackend.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import pjv.hello.vasylnaz.windfarmbackend.dto.OrderRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateOrderRequest;
+import pjv.hello.vasylnaz.windfarmbackend.dto.OrderRequest;
+import pjv.hello.vasylnaz.windfarmbackend.dto.OrderResponse;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Order;
 import pjv.hello.vasylnaz.windfarmbackend.entity.OrderStatus;
 import pjv.hello.vasylnaz.windfarmbackend.repository.AccountRepository;
@@ -91,5 +92,24 @@ public class OrderService {
         orderItemService.releaseInstances(order.getId());
 
         return orderRepository.save(order);
+    }
+
+
+    public OrderResponse findOrderById(long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        return mapToResponse(order);
+    }
+
+
+    public OrderResponse mapToResponse(Order order) {
+        return new OrderResponse(
+                order.getId(),
+                order.getCustomer().getId(),
+                order.getStatus(),
+                order.getCreatedAt(),
+                order.getResolvedAt(),
+                order.getRefundedAt()
+        );
     }
 }

@@ -1,5 +1,6 @@
 package pjv.hello.vasylnaz.windfarmbackend.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import pjv.hello.vasylnaz.windfarmbackend.entity.OrderItem;
 
@@ -8,4 +9,5 @@ import java.util.List;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     List<OrderItem> findByOrderId(Long orderId);
+    List<OrderItem> findByOrderIdAndProductInstanceProductId(Long orderId, Long productId, Pageable pageable);
 }

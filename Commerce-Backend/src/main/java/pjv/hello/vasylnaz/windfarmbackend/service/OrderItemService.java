@@ -1,8 +1,11 @@
 package pjv.hello.vasylnaz.windfarmbackend.service;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import pjv.hello.vasylnaz.windfarmbackend.dto.OrderItemResponse;
 import pjv.hello.vasylnaz.windfarmbackend.dto.OrderItemsRequest;
+import pjv.hello.vasylnaz.windfarmbackend.dto.UnOrderItemsRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.InstanceStatus;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Order;
 import pjv.hello.vasylnaz.windfarmbackend.entity.OrderItem;
@@ -59,6 +62,28 @@ public class OrderItemService {
 
 
     @Transactional
+    public void unOrderItems(UnOrderItemsRequest request){
+        productRepository.findById(request.productId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        orderRepository.findById(request.orderId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        List<OrderItem> items = orderItemRepository
+                .findByOrderIdAndProductInstanceProductId(
+                        request.orderId(),
+                        request.productId(),
+                        PageRequest.of(0, request.quantity()));
+
+        for(OrderItem item : items) {
+            item.getProductInstance().setStatus(InstanceStatus.AVAILABLE);
+        }
+
+        orderItemRepository.deleteAll(items);
+    }
+
+
+    @Transactional
     public void releaseInstances(Long orderId) {
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
 
@@ -75,5 +100,22 @@ public class OrderItemService {
         for(OrderItem item : items) {
             item.getProductInstance().setStatus(InstanceStatus.SOLD);
         }
+    }
+
+
+    public OrderItemResponse findById(Long id) {
+        OrderItem item = orderItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order Item not found"));
+        return mapToResponse(item);
+    }
+
+
+    public OrderItemResponse mapToResponse(OrderItem orderItem) {
+        return new OrderItemResponse(
+            orderItem.getId(),
+            orderItem.getProductInstance().getId(),
+            orderItem.getOrder().getId(),
+            orderItem.getPriceAtPurchase()
+        );
     }
 }

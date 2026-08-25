@@ -48,7 +48,7 @@ public class CategoryService {
         return new CategoryResponse(
                 category.getId(),
                 category.getName(),
-                category.getSuperCategory().getId()
+                category.getSuperCategory() != null ? category.getSuperCategory().getId() : null
         );
     }
 }
