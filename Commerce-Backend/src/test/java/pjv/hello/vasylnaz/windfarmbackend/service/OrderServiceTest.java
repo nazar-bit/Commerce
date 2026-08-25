@@ -103,7 +103,8 @@ public class OrderServiceTest {
                 "Test",
                 "A powerful testing machine",
                 "http://www.example.com",
-                1200.00
+                1200.00,
+                null
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances
@@ -160,7 +161,8 @@ public class OrderServiceTest {
                 "Test",
                 "A powerful testing machine",
                 "http://www.example.com",
-                1200.00
+                1200.00,
+                null
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances
@@ -210,7 +212,8 @@ public class OrderServiceTest {
                 "Test",
                 "A powerful testing machine",
                 "http://www.example.com",
-                1200.00
+                1200.00,
+                null
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances
@@ -263,7 +266,8 @@ public class OrderServiceTest {
                 "Test",
                 "A powerful testing machine",
                 "http://www.example.com",
-                1200.00
+                1200.00,
+                null
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances

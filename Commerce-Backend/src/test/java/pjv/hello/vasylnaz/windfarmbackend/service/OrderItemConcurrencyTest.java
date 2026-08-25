@@ -50,7 +50,7 @@ public class OrderItemConcurrencyTest {
     @Test
     public void testConcurrentUnsucessfullOrderReservation() throws InterruptedException {
         // Create 1 product, but only 1 instance available
-        Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0));
+        Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0, null));
         productService.createNewProductInstances(new CreateProductInstancesRequest("Turbine", 1));
 
         // Create 2 separate users and 2 separate active orders
@@ -123,7 +123,7 @@ public class OrderItemConcurrencyTest {
     @Test
     public void testConcurrentSucessfullOrderReservation() throws InterruptedException {
         // Create 1 product, and 2 instance available
-        Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0));
+        Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0, null));
         productService.createNewProductInstances(new CreateProductInstancesRequest("Turbine", 2));
 
         // Create 2 separate users and 2 separate active orders
@@ -196,7 +196,7 @@ public class OrderItemConcurrencyTest {
     @Test
     public void testConcurrentSucessfullOrderReservationMultiple() throws InterruptedException {
         // Create 1 product, and 5 instances available
-        Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0));
+        Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0, null));
         productService.createNewProductInstances(new CreateProductInstancesRequest("Turbine", 5));
 
         // Create 2 separate users and 2 separate active orders

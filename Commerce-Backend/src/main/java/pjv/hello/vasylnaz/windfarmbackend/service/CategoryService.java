@@ -7,6 +7,9 @@ import pjv.hello.vasylnaz.windfarmbackend.dto.CreateCategoryRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Category;
 import pjv.hello.vasylnaz.windfarmbackend.repository.CategoryRepository;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class CategoryService {
 
@@ -41,6 +44,12 @@ public class CategoryService {
             .orElseThrow(()->new RuntimeException("Category not found"));
 
         return mapToResponse(category);
+    }
+
+
+    public List<CategoryResponse> getCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        return categories.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
 

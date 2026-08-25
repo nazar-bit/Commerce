@@ -1,5 +1,7 @@
 package pjv.hello.vasylnaz.windfarmbackend.dto;
 
+import java.util.List;
+
 public record ProductResponse(
         Long id,
 
@@ -9,5 +11,7 @@ public record ProductResponse(
 
         String imageUrl,
 
-        double price
+        double price,
+
+        List<Long> categories
 ) {}

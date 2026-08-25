@@ -32,7 +32,8 @@ class ProductServiceTest {
                 "Test Laptop",
                 "A powerful testing machine",
                 "http://www.example.com",
-                1200.00
+                1200.00,
+                null
         );
 
         productService.addProduct(request);
@@ -53,13 +54,15 @@ class ProductServiceTest {
                 "Test Laptop",
                 "A powerful testing machine",
                 "http://www.example.com",
-                1200.00
+                1200.00,
+                null
         );
         CreateProductRequest request2 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful machine",
                 "http://www.example2.com",
-                1300.00
+                1300.00,
+                null
         );
 
         productService.addProduct(request1);
@@ -75,7 +78,8 @@ class ProductServiceTest {
                 "Test Laptop",
                 "A powerful testing machine",
                 "http://www.example.com",
-                1200.00
+                1200.00,
+                null
         );
 
         productService.addProduct(request1);

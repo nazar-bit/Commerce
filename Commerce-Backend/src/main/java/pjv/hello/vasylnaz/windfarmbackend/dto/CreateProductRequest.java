@@ -12,6 +12,8 @@ public record CreateProductRequest(
     String imageUrl,
 
     @Positive(message = "Price must be strictly greater than zero")
-    double price
+    double price,
+
+    Long categoryId
 
 ) {}

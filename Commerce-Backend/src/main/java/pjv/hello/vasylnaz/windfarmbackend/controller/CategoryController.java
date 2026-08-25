@@ -8,6 +8,8 @@ import pjv.hello.vasylnaz.windfarmbackend.dto.CreateCategoryRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Category;
 import pjv.hello.vasylnaz.windfarmbackend.service.CategoryService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
@@ -22,6 +24,12 @@ public class CategoryController {
     public ResponseEntity<CategoryResponse> getCategory(@PathVariable Long id) {
         CategoryResponse category = categoryService.findById(id);
         return ResponseEntity.ok(category);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CategoryResponse>> getCategories() {
+        List<CategoryResponse> categories = categoryService.getCategories();
+        return ResponseEntity.ok(categories);
     }
 
     @PostMapping("/create")
