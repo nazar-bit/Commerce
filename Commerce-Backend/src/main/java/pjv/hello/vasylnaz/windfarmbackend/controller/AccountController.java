@@ -1,5 +1,6 @@
 package pjv.hello.vasylnaz.windfarmbackend.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class AccountController
    }
 
    @PostMapping("/register")
-   public ResponseEntity<AccountResponse> register(@RequestBody RegisterRequest request) {
+   public ResponseEntity<AccountResponse> register(@Valid @RequestBody RegisterRequest request) {
       Account newAccount = accountService.registerAccount(request);
       return ResponseEntity.status(HttpStatus.CREATED).body(accountService.mapToResponse(newAccount));
    }

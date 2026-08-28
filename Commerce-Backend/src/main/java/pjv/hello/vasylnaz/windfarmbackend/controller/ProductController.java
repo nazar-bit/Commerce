@@ -1,5 +1,6 @@
 package pjv.hello.vasylnaz.windfarmbackend.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,21 +38,21 @@ public class ProductController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<ProductResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest createProductRequest) {
         Product product = productService.addProduct(createProductRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.mapToResponse(product));
     }
 
 
     @PostMapping("/create/instances")
-    public ResponseEntity<Void> createProductInstances(@RequestBody CreateProductInstancesRequest createProductInstancesRequest) {
+    public ResponseEntity<Void> createProductInstances(@Valid @RequestBody CreateProductInstancesRequest createProductInstancesRequest) {
         productService.createNewProductInstances(createProductInstancesRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @PutMapping("/assign")
-    public ResponseEntity<ProductResponse> assignCategory(@RequestBody AssignCategoryToProductRequest request) {
+    public ResponseEntity<ProductResponse> assignCategory(@Valid @RequestBody AssignCategoryToProductRequest request) {
         Product product = productService.assignCategory(request);
         return ResponseEntity.status(HttpStatus.OK).body(productService.mapToResponse(product));
     }

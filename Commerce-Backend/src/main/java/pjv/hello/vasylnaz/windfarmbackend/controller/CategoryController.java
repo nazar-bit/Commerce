@@ -1,5 +1,6 @@
 package pjv.hello.vasylnaz.windfarmbackend.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class CategoryController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<CategoryResponse> createCategory(@RequestBody CreateCategoryRequest createCategoryRequest) {
+    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
         Category category = categoryService.addCategory(createCategoryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.mapToResponse(category));
     }

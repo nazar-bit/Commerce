@@ -4,47 +4,218 @@
     <meta charset="UTF-8">
     <title>WindFarm Catalog</title>
     <style>
-        body { font-family: Arial, sans-serif; display: flex; gap: 20px; padding: 20px; }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .layout { display: flex; gap: 20px; margin-top: 20px; }
         .panel { border: 1px solid #ccc; padding: 15px; width: 300px; background: #f9f9f9; }
         .item-btn { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; text-align: left; }
         .product-card { border: 1px solid #000; padding: 10px; margin-bottom: 10px; background: #fff; }
+        
+        /* New Authentication Styles */
+        #auth-bar { background: #eee; padding: 10px; display: flex; justify-content: flex-end; gap: 10px; border: 1px solid #ccc; }
+        .auth-form { border: 1px solid #ccc; padding: 15px; background: #fff; width: 300px; position: absolute; right: 20px; top: 60px; display: none; }
+        .auth-form input, .auth-form select { width: 90%; margin-bottom: 10px; padding: 8px; }
+        .auth-form button { width: 100%; padding: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="panel">
-        <h3>Categories</h3>
-        <button onclick="renderCategories(null)">Reset to Top Level</button>
-        <hr>
-        <div id="category-list"></div>
+    <!-- Authentication Top Bar -->
+    <div id="auth-bar">
+        <div id="logged-out-view">
+            <button onclick="toggleForm('login-form')">Sign In</button>
+            <button onclick="toggleForm('register-form')">Register</button>
+        </div>
+        <div id="logged-in-view" style="display: none;">
+            <span id="user-info"></span>
+            <button onclick="logout()">Log Out</button>
+        </div>
     </div>
 
-    <div class="panel" style="width: 500px;">
-        <h3>Available Products</h3>
-        <div id="product-list">
-            Select a category to view products.
+    <!-- Login Form -->
+    <div id="login-form" class="auth-form">
+        <h3>Sign In</h3>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="login()">Submit</button>
+        <p id="login-msg" style="color:red; font-size: 12px;"></p>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="auth-form">
+        <h3>Register</h3>
+        <input type="text" id="reg-firstname" placeholder="First Name">
+        <input type="text" id="reg-lastname" placeholder="Last Name">
+        <input type="text" id="reg-email" placeholder="Email">
+        <input type="text" id="reg-phonenumber" placeholder="Phone Number">
+        <input type="password" id="reg-password" placeholder="Password">
+        <select id="reg-role">
+            <option value="CUSTOMER">Customer</option>
+            <option value="MAINTAINER">Maintainer</option>
+        </select>
+        <button onclick="register()">Submit</button>
+        <p id="reg-msg" style="color:red; font-size: 12px;"></p>
+    </div>
+
+    <div class="layout">
+        <div class="panel">
+            <h3>Categories</h3>
+            <button onclick="navigateToCategory(null)">Reset to Top Level</button>
+            <hr>
+            <div id="category-list"></div>
+        </div>
+
+        <div class="panel" style="width: 500px;">
+            <h3>Available Products</h3>
+            <div id="product-list">
+                Select a category to view products.
+            </div>
         </div>
     </div>
 
     <script>
         let allCategories = [];
+        let currentUser = null; // Stores logged-in user data
 
         window.onload = function() {
+            checkLocalSession();
+            
             fetch('http://localhost:8080/api/categories')
                 .then(response => response.json())
                 .then(data => {
                     allCategories = data;
-                    renderCategories(null);
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const categoryId = urlParams.get('category') ? parseInt(urlParams.get('category')) : null;
+                    loadCategoryState(categoryId);
                 })
                 .catch(error => console.error('Error fetching categories:', error));
         };
+
+        // --- AUTHENTICATION LOGIC ---
+
+        function toggleForm(formId) {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'none';
+            if (formId) {
+                document.getElementById(formId).style.display = 'block';
+            }
+        }
+
+        function register() {
+            // Adjust property names to match your RegisterRequest backend DTO
+            const payload = {
+                firstName: document.getElementById('reg-firstname').value,
+                lastName: document.getElementById('reg-lastname').value,
+                email: document.getElementById('reg-email').value,
+                phoneNumber: document.getElementById('reg-phonenumber').value,
+                password: document.getElementById('reg-password').value,
+                role: document.getElementById('reg-role').value 
+            };
+
+            fetch('http://localhost:8080/api/accounts/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+                })
+            .then(async response => {
+                if (!response.ok) {
+                    // Read the raw error response from the backend
+                    const errorText = await response.text();
+                    
+                    try {
+                        // Attempt to parse it as JSON (Spring Boot often sends JSON errors)
+                        const errorJson = JSON.parse(errorText);
+                        throw new Error(errorJson.message || errorJson.error || 'Registration failed');
+                    } catch (e) {
+                        // If it's not JSON, throw the plain text string, or a fallback
+                        throw new Error(errorText || 'Registration failed');
+                    }
+                }
+                return response.json();
+            })
+            .then(accountResponse => {
+                setSession(accountResponse);
+                toggleForm(null);
+            })
+            .catch(error => {
+                document.getElementById('reg-msg').innerText = error.message;
+            });
+        }
+
+        function login() {
+            // PLACEHOLDER: Needs the actual login endpoint details
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Example of what this will look like once you provide the endpoint:
+            /*
+            fetch('http://localhost:8080/api/auth/login', { ... })
+            */
+            console.log("Login clicked. Missing backend login endpoint.");
+        }
+
+        function setSession(accountData) {
+            currentUser = accountData;
+            localStorage.setItem('windfarm_user', JSON.stringify(accountData));
+            updateAuthUI();
+        }
+
+        function checkLocalSession() {
+            const savedUser = localStorage.getItem('windfarm_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateAuthUI();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('windfarm_user');
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            if (currentUser) {
+                document.getElementById('logged-out-view').style.display = 'none';
+                document.getElementById('logged-in-view').style.display = 'block';
+                // Adjust property names based on your AccountResponse DTO
+                document.getElementById('user-info').innerText = `Logged in as: ${currentUser.username || 'User'}`;
+            } else {
+                document.getElementById('logged-out-view').style.display = 'block';
+                document.getElementById('logged-in-view').style.display = 'none';
+            }
+        }
+
+        // --- CATALOG LOGIC (Unchanged from previous design) ---
+        window.addEventListener('popstate', function(event) {
+            const categoryId = event.state && event.state.id ? event.state.id : null;
+            loadCategoryState(categoryId);
+        });
+
+        function loadCategoryState(categoryId) {
+            renderCategories(categoryId);
+            if (categoryId !== null) {
+                fetchProducts(categoryId);
+            } else {
+                document.getElementById('product-list').innerHTML = 'Select a category to view products.';
+            }
+        }
+
+        function navigateToCategory(categoryId) {
+            const url = new URL(window.location);
+            if (categoryId !== null) {
+                url.searchParams.set('category', categoryId);
+            } else {
+                url.searchParams.delete('category');
+            }
+            window.history.pushState({ id: categoryId }, '', url);
+            loadCategoryState(categoryId);
+        }
 
         function renderCategories(parentId) {
             const container = document.getElementById('category-list');
             container.innerHTML = ''; 
 
             const subcategories = allCategories.filter(cat => {
-                // Match the exact JSON key sent by your backend
                 return (cat.superId == null && parentId == null) || cat.superId === parentId;
             });
 
@@ -57,12 +228,7 @@
                 const btn = document.createElement('button');
                 btn.className = 'item-btn';
                 btn.innerText = category.name;
-                
-                btn.onclick = function() {
-                    renderCategories(category.id);
-                    fetchProducts(category.id);
-                };
-                
+                btn.onclick = () => navigateToCategory(category.id);
                 container.appendChild(btn);
             });
         }
@@ -75,12 +241,10 @@
                 .then(response => response.json())
                 .then(products => {
                     productContainer.innerHTML = ''; 
-
                     if (!products || products.length === 0) {
                         productContainer.innerHTML = '<i>No products in this category.</i>';
                         return;
                     }
-
                     products.forEach(product => {
                         const div = document.createElement('div');
                         div.className = 'product-card';
@@ -94,7 +258,6 @@
                 })
                 .catch(error => {
                     productContainer.innerHTML = 'Error loading products.';
-                    console.error('Error fetching products:', error);
                 });
         }
     </script>

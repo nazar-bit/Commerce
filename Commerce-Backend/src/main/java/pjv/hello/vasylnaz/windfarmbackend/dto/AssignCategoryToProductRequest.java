@@ -1,11 +1,11 @@
 package pjv.hello.vasylnaz.windfarmbackend.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record AssignCategoryToProductRequest(
-        @NotBlank(message = "productId is required")
+        @NotNull(message = "productId is required")
         Long productId,
 
-        @NotBlank(message = "categoryId is required")
+        @NotNull(message = "categoryId is required")
         Long categoryId
 ) {}

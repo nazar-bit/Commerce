@@ -1,5 +1,6 @@
 package pjv.hello.vasylnaz.windfarmbackend.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,25 +27,25 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest) {
         Order order = orderService.createOrder(createOrderRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.mapToResponse(order));
     }
 
     @PutMapping("/cancel")
-    public ResponseEntity<OrderResponse> cancelOrder(@RequestBody OrderRequest orderRequest) {
+    public ResponseEntity<OrderResponse> cancelOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.cancelOrder(orderRequest);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.mapToResponse(order));
     }
 
     @PutMapping("/complete")
-    public ResponseEntity<OrderResponse> completeOrder(@RequestBody OrderRequest orderRequest) {
+    public ResponseEntity<OrderResponse> completeOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.completeOrder(orderRequest);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.mapToResponse(order));
     }
 
     @PutMapping("/refund")
-    public ResponseEntity<OrderResponse> refundOrder(@RequestBody OrderRequest orderRequest) {
+    public ResponseEntity<OrderResponse> refundOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.refundOrder(orderRequest);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.mapToResponse(order));
     }

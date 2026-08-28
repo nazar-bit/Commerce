@@ -1,8 +1,8 @@
 package pjv.hello.vasylnaz.windfarmbackend.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record OrderRequest(
-    @NotBlank(message = "orderId is required")
+    @NotNull(message = "orderId is required")
     Long orderId
 ) {}

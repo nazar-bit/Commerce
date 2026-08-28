@@ -1,6 +1,7 @@
 package pjv.hello.vasylnaz.windfarmbackend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Role;
 
 public record RegisterRequest(
@@ -11,7 +12,7 @@ public record RegisterRequest(
     @NotBlank(message = "password is required")
     String password,
 
-    @NotBlank(message = "role is required")
+    @NotNull(message = "role is required")
     Role role,
 
     @NotBlank(message = "firstName is required")

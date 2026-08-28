@@ -1,5 +1,6 @@
 package pjv.hello.vasylnaz.windfarmbackend.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class OrderItemController {
     }
 
     @PostMapping("/order")
-    public ResponseEntity<List<OrderItemResponse>> order(@RequestBody OrderItemsRequest orderItemsRequest) {
+    public ResponseEntity<List<OrderItemResponse>> order(@Valid @RequestBody OrderItemsRequest orderItemsRequest) {
         List<OrderItem> orderItems = orderItemService.orderItems(orderItemsRequest);
         List<OrderItemResponse> orderItemResponses = new ArrayList<>();
         for (OrderItem orderItem : orderItems) {

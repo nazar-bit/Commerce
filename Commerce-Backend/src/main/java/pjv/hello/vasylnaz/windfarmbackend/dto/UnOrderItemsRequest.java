@@ -1,12 +1,12 @@
 package pjv.hello.vasylnaz.windfarmbackend.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record UnOrderItemsRequest(
-        @NotBlank(message = "orderId is required")
+        @NotNull(message = "orderId is required")
         Long orderId,
-        @NotBlank(message = "productId is required")
+        @NotNull(message = "productId is required")
         Long productId,
-        @NotBlank(message = "quantity is required")
+        @NotNull(message = "quantity is required")
         int quantity
 ) {}
