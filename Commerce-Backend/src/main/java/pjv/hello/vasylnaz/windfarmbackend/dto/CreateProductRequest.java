@@ -15,6 +15,7 @@ public record CreateProductRequest(
     @Positive(message = "Price must be strictly greater than zero")
     double price,
 
+    @NotNull(message = "Every product must belong to a category")
     Long categoryId
 
 ) {}

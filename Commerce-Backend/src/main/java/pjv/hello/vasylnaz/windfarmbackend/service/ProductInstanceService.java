@@ -1,20 +1,15 @@
 package pjv.hello.vasylnaz.windfarmbackend.service;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductInstancesRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.InstanceStatus;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
 import pjv.hello.vasylnaz.windfarmbackend.entity.ProductInstance;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductInstanceRepository;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductInstanceService {
@@ -53,5 +48,9 @@ public class ProductInstanceService {
         }
 
         return productInstanceRepository.saveAll(instances);
+    }
+
+    public Long countByProductId(Long productId){
+        return productInstanceRepository.countByProductIdAndStatus(productId, InstanceStatus.AVAILABLE);
     }
 }

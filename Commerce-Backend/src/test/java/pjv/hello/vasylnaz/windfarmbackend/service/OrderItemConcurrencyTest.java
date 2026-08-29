@@ -51,7 +51,7 @@ public class OrderItemConcurrencyTest {
     public void testConcurrentUnsucessfullOrderReservation() throws InterruptedException {
         // Create 1 product, but only 1 instance available
         Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0, null));
-        productService.createNewProductInstances(new CreateProductInstancesRequest("Turbine", 1));
+        productService.createNewProductInstances(new CreateProductInstancesRequest(product.getId(), 1));
 
         // Create 2 separate users and 2 separate active orders
         Account user1 = accountService.registerAccount(new RegisterRequest("u1@x.com", "pass",
@@ -124,7 +124,7 @@ public class OrderItemConcurrencyTest {
     public void testConcurrentSucessfullOrderReservation() throws InterruptedException {
         // Create 1 product, and 2 instance available
         Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0, null));
-        productService.createNewProductInstances(new CreateProductInstancesRequest("Turbine", 2));
+        productService.createNewProductInstances(new CreateProductInstancesRequest(product.getId(), 2));
 
         // Create 2 separate users and 2 separate active orders
         Account user1 = accountService.registerAccount(new RegisterRequest("u1@x.com", "pass",
@@ -197,7 +197,7 @@ public class OrderItemConcurrencyTest {
     public void testConcurrentSucessfullOrderReservationMultiple() throws InterruptedException {
         // Create 1 product, and 5 instances available
         Product product = productService.addProduct(new CreateProductRequest("Turbine", "Desc", "url", 1000.0, null));
-        productService.createNewProductInstances(new CreateProductInstancesRequest("Turbine", 5));
+        productService.createNewProductInstances(new CreateProductInstancesRequest(product.getId(), 5));
 
         // Create 2 separate users and 2 separate active orders
         Account user1 = accountService.registerAccount(new RegisterRequest("u1@x.com", "pass",

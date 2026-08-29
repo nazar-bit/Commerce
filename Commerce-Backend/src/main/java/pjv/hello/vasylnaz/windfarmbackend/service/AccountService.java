@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pjv.hello.vasylnaz.windfarmbackend.dto.AccountResponse;
+import pjv.hello.vasylnaz.windfarmbackend.dto.LoginRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.RegisterRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Account;
 import pjv.hello.vasylnaz.windfarmbackend.repository.AccountRepository;
@@ -35,7 +36,7 @@ public class AccountService {
         account.setLastName(request.lastName());
         account.setRole(request.role());
 
-        if(request.phoneNumber() != null){
+        if(request.phoneNumber() != null && !request.phoneNumber().trim().isEmpty()){
             if(accountRepository.existsByPhoneNumber(request.phoneNumber())){
                 throw new RuntimeException("Phone number already in use");
             }
@@ -49,6 +50,16 @@ public class AccountService {
     public AccountResponse findById(Long id) {
         return mapToResponse(accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Account not found with ID: " + id)));
+    }
+
+
+    public AccountResponse login(LoginRequest loginRequest) {
+        Account account = accountRepository.findByEmail(loginRequest.email())
+                .orElseThrow(() -> new RuntimeException("Account not found with email: " + loginRequest.email()));
+        if(!passwordEncoder.matches(loginRequest.password(), account.getPassword())){
+            throw new RuntimeException("Incorrect password");
+        }
+        return mapToResponse(account);
     }
 
 

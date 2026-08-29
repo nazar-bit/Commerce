@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pjv.hello.vasylnaz.windfarmbackend.dto.AccountResponse;
+import pjv.hello.vasylnaz.windfarmbackend.dto.LoginRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.RegisterRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Account;
 import pjv.hello.vasylnaz.windfarmbackend.service.AccountService;
@@ -22,6 +23,12 @@ public class AccountController
    @GetMapping("/{id}")
    public ResponseEntity<AccountResponse> getAccount(@PathVariable Long id) {
       AccountResponse account = accountService.findById(id);
+      return ResponseEntity.ok(account);
+   }
+
+   @PostMapping("/login")
+   public ResponseEntity<AccountResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+      AccountResponse account = accountService.login(loginRequest);
       return ResponseEntity.ok(account);
    }
 

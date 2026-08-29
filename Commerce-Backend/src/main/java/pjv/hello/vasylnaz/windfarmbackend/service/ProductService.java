@@ -74,7 +74,7 @@ public class ProductService {
 
     @Transactional
     public List<ProductInstance> createNewProductInstances(CreateProductInstancesRequest request) {
-        Product savedProduct = productRepository.findByName(request.productName())
+        Product savedProduct = productRepository.findById(request.productId())
                 .orElseThrow(() -> new RuntimeException("Product with this name does not exist\n." +
                         " Cannot create product instances"));
         return productInstanceService.createNewInstances(savedProduct, request.quantity());
@@ -102,7 +102,8 @@ public class ProductService {
                 product.getDescription(),
                 product.getImageUrl(),
                 product.getPrice(),
-                product.getCategories().stream().map(Category::getId).collect(Collectors.toList())
+                product.getCategories().stream().map(Category::getId).collect(Collectors.toList()),
+                productInstanceService.countByProductId(product.getId())
         );
     }
 }

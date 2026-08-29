@@ -108,7 +108,7 @@ public class OrderServiceTest {
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances
-        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+        productService.createNewProductInstances(new CreateProductInstancesRequest(product.getId(), 12));
 
         // Create new Account
         Account account = new Account();
@@ -166,7 +166,7 @@ public class OrderServiceTest {
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances
-        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+        productService.createNewProductInstances(new CreateProductInstancesRequest(product.getId(), 12));
 
         // Create new Account
         Account account = new Account();
@@ -217,7 +217,7 @@ public class OrderServiceTest {
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances
-        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+        productService.createNewProductInstances(new CreateProductInstancesRequest(product.getId(), 12));
 
         // Create new Account
         Account account = new Account();
@@ -271,7 +271,7 @@ public class OrderServiceTest {
         );
         Product product = productService.addProduct(requestProd);
         // Create 12 instances
-        productService.createNewProductInstances(new CreateProductInstancesRequest("Test", 12));
+        productService.createNewProductInstances(new CreateProductInstancesRequest(product.getId(), 12));
 
         // Create new Account
         Account account = new Account();

@@ -13,5 +13,7 @@ public record ProductResponse(
 
         double price,
 
-        List<Long> categories
+        List<Long> categories,
+
+        Long instanceCount
 ) {}

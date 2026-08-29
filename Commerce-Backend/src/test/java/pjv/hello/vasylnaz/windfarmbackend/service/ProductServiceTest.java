@@ -82,10 +82,10 @@ class ProductServiceTest {
                 null
         );
 
-        productService.addProduct(request1);
+        Product product = productService.addProduct(request1);
 
         CreateProductInstancesRequest request2 = new CreateProductInstancesRequest(
-                "Test Laptop",
+                product.getId(),
                 10
         );
 
