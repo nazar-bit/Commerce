@@ -33,6 +33,8 @@ public class Product {
     )
     private Set<Category> categories = new HashSet<>();
 
+    private boolean available;
+
     // Getters and setters
 
     public Long getId() {
@@ -89,5 +91,13 @@ public class Product {
 
     public void removeCategory(Category category) {
         this.categories.remove(category);
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 }

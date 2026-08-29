@@ -42,6 +42,7 @@ public class ProductService {
         product.setDescription(request.description());
         product.setPrice(request.price());
         product.setImageUrl(request.imageUrl());
+        product.setAvailable(true);
 
         if (request.categoryId() != null) {
             Category category = categoryRepository.findById(request.categoryId())
@@ -85,13 +86,48 @@ public class ProductService {
         Product product = productRepository.findById(id).
                 orElseThrow(() -> new RuntimeException("Product with this id does not exist"));
 
+        if(!product.isAvailable()) {
+            throw new RuntimeException("Product is not available");
+        }
         return mapToResponse(product);
     }
 
 
     public List<ProductResponse> getProductsByCategory(long id) {
-        List<Product> products = productRepository.findByCategoriesId(id);
+        List<Product> products = productRepository.findByCategoriesIdAndAvailable(id, true);
         return products.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public ProductResponse deleteProduct(long id) {
+        Product product = productRepository.findById(id).
+                orElseThrow(() -> new RuntimeException("Product with this id does not exist"));
+
+        if(!product.isAvailable()) {
+            throw new RuntimeException("Product is already deleted");
+        }
+
+        product.setAvailable(false);
+        productInstanceService.deleteInstances(product.getId());
+
+        return mapToResponse(productRepository.save(product));
+    }
+
+
+    @Transactional
+    public ProductResponse deleteProduct(String name) {
+        Product product = productRepository.findByName(name).
+                orElseThrow(() -> new RuntimeException("Product with this id does not exist"));
+
+        if(!product.isAvailable()) {
+            throw new RuntimeException("Product is already deleted");
+        }
+
+        product.setAvailable(false);
+        productInstanceService.deleteInstances(product.getId());
+
+        return mapToResponse(productRepository.save(product));
     }
 
 

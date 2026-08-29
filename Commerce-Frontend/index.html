@@ -87,6 +87,30 @@
 
         .auth-form button { width: 100%; padding: 8px; margin-top: 5px; }
 
+        /* Form Header & Mode Toggle */
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-right: 40px; /* Leaves room for the absolute close button */
+        }
+        .form-header h3 { margin: 0; font-size: 18px; }
+        .form-mode-btns { display: flex; gap: 5px; }
+        .mode-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #eee;
+            border-radius: 3px;
+        }
+        .mode-btn.active {
+            background: #333;
+            color: #fff;
+            border-color: #333;
+        }
+
         /* Maintainer-only top bar buttons */
         .maintainer-btn { display: none; padding: 8px 12px; cursor: pointer; }
 
@@ -116,9 +140,11 @@
     <div id="auth-bar">
         <!-- Top Left: Maintainer Controls -->
         <div class="auth-bar-left">
-            <button id="add-product-btn" class="maintainer-btn" onclick="toggleForm('add-product-form')">Add Product</button>
+            <button id="nav-product-btn" class="maintainer-btn" onclick="toggleForm('product-menu')">Product</button>
+            <button id="nav-category-btn" class="maintainer-btn" onclick="toggleForm('category-menu')">Category</button>
+            <button id="nav-assign-btn" class="maintainer-btn" onclick="toggleForm('assign-menu')">Assign Category</button>
+            <button id="nav-unassign-btn" class="maintainer-btn" onclick="toggleForm('unassign-menu')">Unassign Category</button>
             <button id="create-instances-btn" class="maintainer-btn" onclick="toggleCreateInstances()">Create Instances</button>
-            <button id="create-category-btn" class="maintainer-btn" onclick="toggleForm('create-category-form')">Create Category</button>
         </div>
 
         <!-- Top Right: Auth Controls -->
@@ -181,51 +207,125 @@
         <p id="reg-msg" style="color:red; font-size: 12px; white-space: pre-wrap;"></p>
     </div>
 
-    <!-- Add Product Form (Maintainer only) -->
-    <div id="add-product-form" class="auth-form form-left">
+    <!-- Product Menu (Add / Delete) -->
+    <div id="product-menu" class="auth-form form-left">
         <button class="close-btn" onclick="toggleForm(null)">&times;</button>
-        <h3>Add Product</h3>
-        <div class="input-container">
-            <input type="text" id="add-product-name" placeholder=" ">
-            <span class="fake-placeholder">Name<span class="req-star">*</span></span>
+        <div class="form-header">
+            <h3>Product</h3>
+            <div class="form-mode-btns">
+                <button class="mode-btn active" id="btn-prod-add" onclick="switchTab('prod', 'add')">Add</button>
+                <button class="mode-btn" id="btn-prod-del" onclick="switchTab('prod', 'del')">Delete</button>
+            </div>
         </div>
-        <div class="input-container">
-            <textarea id="add-product-description" placeholder="Description" rows="3" style="resize: vertical;"></textarea>
+
+        <!-- Add Product Section -->
+        <div id="section-prod-add">
+            <div class="input-container">
+                <input type="text" id="add-product-name" placeholder=" ">
+                <span class="fake-placeholder">Name<span class="req-star">*</span></span>
+            </div>
+            <div class="input-container">
+                <textarea id="add-product-description" placeholder="Description" rows="3" style="resize: vertical;"></textarea>
+            </div>
+            <div class="input-container">
+                <input type="text" id="add-product-imageurl" placeholder="Image URL">
+            </div>
+            <div class="input-container">
+                <input type="number" id="add-product-price" placeholder=" " min="0.01" step="0.01">
+                <span class="fake-placeholder">Price<span class="req-star">*</span></span>
+            </div>
+            <div class="input-container">
+                <select id="add-product-category">
+                    <option value="">Select a category...</option>
+                </select>
+                <span class="select-star">*</span>
+            </div>
+            <button onclick="addProduct()">Submit (Add)</button>
         </div>
-        <div class="input-container">
-            <input type="text" id="add-product-imageurl" placeholder="Image URL">
+
+        <!-- Delete Product Section -->
+        <div id="section-prod-del" style="display: none;">
+            <div class="input-container">
+                <input type="text" id="delete-product-name" placeholder=" ">
+                <span class="fake-placeholder">Product Name<span class="req-star">*</span></span>
+            </div>
+            <button onclick="deleteProduct()" style="background: #dc3545; color: white; border: none;">Submit (Delete)</button>
         </div>
-        <div class="input-container">
-            <input type="number" id="add-product-price" placeholder=" " min="0.01" step="0.01">
-            <span class="fake-placeholder">Price<span class="req-star">*</span></span>
-        </div>
-        <div class="input-container">
-            <select id="add-product-category">
-                <option value="">Select a category...</option>
-            </select>
-            <span class="select-star">*</span>
-        </div>
-        <button onclick="addProduct()">Submit</button>
-        <p id="add-product-msg" style="color:red; font-size: 12px; white-space: pre-wrap;"></p>
+        <p id="product-msg" style="color:red; font-size: 12px; white-space: pre-wrap; margin-top: 5px;"></p>
     </div>
 
-    <!-- Create Category Form (Maintainer only) -->
-    <div id="create-category-form" class="auth-form form-left">
+
+    <!-- Category Menu (Add / Delete) -->
+    <div id="category-menu" class="auth-form form-left">
         <button class="close-btn" onclick="toggleForm(null)">&times;</button>
-        <h3>Create Category</h3>
-        <div class="input-container">
-            <input type="text" id="create-category-name" placeholder=" ">
-            <span class="fake-placeholder">Category Name<span class="req-star">*</span></span>
+        <div class="form-header">
+            <h3>Category</h3>
+            <div class="form-mode-btns">
+                <button class="mode-btn active" id="btn-cat-add" onclick="switchTab('cat', 'add')">Add</button>
+                <button class="mode-btn" id="btn-cat-del" onclick="switchTab('cat', 'del')">Delete</button>
+            </div>
         </div>
-        <div class="input-container">
-            <select id="create-category-supername">
-                <option value="">None (Top Level)</option>
-            </select>
+
+        <!-- Add Category Section -->
+        <div id="section-cat-add">
+            <div class="input-container">
+                <input type="text" id="create-category-name" placeholder=" ">
+                <span class="fake-placeholder">Category Name<span class="req-star">*</span></span>
+            </div>
+            <div class="input-container">
+                <select id="create-category-supername">
+                    <option value="">None (Top Level)</option>
+                </select>
+            </div>
+            <button onclick="createCategory()">Submit (Add)</button>
         </div>
-        <button onclick="createCategory()">Submit</button>
-        <p id="create-category-msg" style="color:red; font-size: 12px; white-space: pre-wrap;"></p>
+
+        <!-- Delete Category Section -->
+        <div id="section-cat-del" style="display: none;">
+            <div class="input-container">
+                <input type="text" id="delete-category-name" placeholder=" ">
+                <span class="fake-placeholder">Category Name<span class="req-star">*</span></span>
+            </div>
+            <button onclick="deleteCategory()" style="background: #dc3545; color: white; border: none;">Submit (Delete)</button>
+        </div>
+        <p id="category-msg" style="color:red; font-size: 12px; white-space: pre-wrap; margin-top: 5px;"></p>
     </div>
 
+
+    <!-- Assign Category Menu -->
+    <div id="assign-menu" class="auth-form form-left">
+        <button class="close-btn" onclick="toggleForm(null)">&times;</button>
+        <div class="form-header">
+            <h3>Assign Category</h3>
+        </div>
+        <div class="input-container">
+            <input type="text" id="assign-target-name" placeholder=" ">
+            <span class="fake-placeholder">Target Category Name<span class="req-star">*</span></span>
+        </div>
+        <div class="input-container">
+            <input type="text" id="assign-super-name" placeholder=" ">
+            <span class="fake-placeholder">New Super Category Name<span class="req-star">*</span></span>
+        </div>
+        <button onclick="assignCategory()">Submit (Assign)</button>
+        <p id="assign-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
+    </div>
+
+
+    <!-- Unassign Category Menu -->
+    <div id="unassign-menu" class="auth-form form-left">
+        <button class="close-btn" onclick="toggleForm(null)">&times;</button>
+        <div class="form-header">
+            <h3>Unassign Category</h3>
+        </div>
+        <div class="input-container">
+            <input type="text" id="unassign-target-name" placeholder=" ">
+            <span class="fake-placeholder">Target Category Name<span class="req-star">*</span></span>
+        </div>
+        <button onclick="unassignCategory()">Submit (Unassign)</button>
+        <p id="unassign-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
+    </div>
+
+    <!-- Choose items -->
     <div class="layout">
         <div class="panel">
             <h3>Categories</h3>
@@ -269,12 +369,39 @@
                 .catch(error => console.error('Error fetching categories:', error));
         }
 
+        function updateAuthUI() {
+            const btns = ['nav-product-btn', 'nav-category-btn', 'nav-assign-btn', 'nav-unassign-btn', 'create-instances-btn'];
+            
+            if (currentUser) {
+                document.getElementById('logged-out-view').style.display = 'none';
+                document.getElementById('logged-in-view').style.display = 'flex';
+                document.getElementById('user-info').innerText = `Logged in as: ${currentUser.firstName || currentUser.email || 'User'}`;
+
+                const isMaintainer = currentUser.role === 'MAINTAINER';
+                btns.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.style.display = isMaintainer ? 'inline-block' : 'none';
+                });
+            } else {
+                document.getElementById('logged-out-view').style.display = 'flex';
+                document.getElementById('logged-in-view').style.display = 'none';
+
+                btns.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.style.display = 'none';
+                });
+
+                creatingInstances = false;
+                const instBtn = document.getElementById('create-instances-btn');
+                if (instBtn) instBtn.innerText = 'Create Instances';
+                updateProductListHeading();
+                if (currentCategoryId !== null) renderProducts();
+            }
+        }
+
         function toggleForm(formId) {
             document.querySelectorAll('.auth-form').forEach(form => form.style.display = 'none');
             document.querySelectorAll('.auth-form p').forEach(p => p.innerText = '');
-            document.querySelectorAll('.auth-form input').forEach(input => input.value = '');
-            document.querySelectorAll('.auth-form select').forEach(select => select.selectedIndex = 0);
-            document.querySelectorAll('.auth-form textarea').forEach(textarea => textarea.value = '');
 
             if (creatingInstances) {
                 creatingInstances = false;
@@ -288,12 +415,22 @@
                 const target = document.getElementById(formId);
                 if (target) {
                     target.style.display = 'block';
-                    
-                    if (formId === 'add-product-form' || formId === 'create-category-form') {
+                    if (['product-menu', 'category-menu', 'assign-menu', 'unassign-menu'].includes(formId)) {
                         fetchCategories();
                     }
                 }
             }
+        }
+
+        function switchTab(menu, mode) {
+            document.getElementById(`btn-${menu}-add`).classList.toggle('active', mode === 'add');
+            document.getElementById(`btn-${menu}-del`).classList.toggle('active', mode === 'del');
+
+            document.getElementById(`section-${menu}-add`).style.display = (mode === 'add') ? 'block' : 'none';
+            document.getElementById(`section-${menu}-del`).style.display = (mode === 'del') ? 'block' : 'none';
+            
+            let msgBox = document.getElementById(`${menu === 'prod' ? 'product' : 'category'}-msg`);
+            if (msgBox) msgBox.innerText = '';
         }
 
         function register() {
@@ -374,34 +511,6 @@
             updateAuthUI();
         }
 
-        function updateAuthUI() {
-            const addProductBtn = document.getElementById('add-product-btn');
-            const createCategoryBtn = document.getElementById('create-category-btn');
-            const createInstancesBtn = document.getElementById('create-instances-btn');
-
-            if (currentUser) {
-                document.getElementById('logged-out-view').style.display = 'none';
-                document.getElementById('logged-in-view').style.display = 'flex';
-                document.getElementById('user-info').innerText = `Logged in as: ${currentUser.firstName || currentUser.email || 'User'}`;
-
-                const isMaintainer = currentUser.role === 'MAINTAINER';
-                if (addProductBtn) addProductBtn.style.display = isMaintainer ? 'inline-block' : 'none';
-                if (createCategoryBtn) createCategoryBtn.style.display = isMaintainer ? 'inline-block' : 'none';
-                if (createInstancesBtn) createInstancesBtn.style.display = isMaintainer ? 'inline-block' : 'none';
-            } else {
-                document.getElementById('logged-out-view').style.display = 'flex';
-                document.getElementById('logged-in-view').style.display = 'none';
-
-                if (addProductBtn) addProductBtn.style.display = 'none';
-                if (createCategoryBtn) createCategoryBtn.style.display = 'none';
-                if (createInstancesBtn) createInstancesBtn.style.display = 'none';
-
-                creatingInstances = false;
-                if (createInstancesBtn) createInstancesBtn.innerText = 'Create Instances';
-                updateProductListHeading();
-                if (currentCategoryId !== null) renderProducts();
-            }
-        }
 
         window.addEventListener('popstate', function(event) {
             const categoryId = event.state && event.state.id ? event.state.id : null;
@@ -526,7 +635,6 @@
 
             const quantity = parseInt(qtyInput.value, 10) || 1;
 
-            // Display processing state immediately
             if (msgEl) { 
                 msgEl.style.color = 'blue'; 
                 msgEl.innerText = 'Processing...'; 
@@ -620,35 +728,6 @@
             });
         }
 
-        function createCategory() {
-            const name = document.getElementById('create-category-name').value.trim();
-            const superCategoryName = document.getElementById('create-category-supername').value;
-
-            const payload = {
-                name: name,
-                superCategoryName: superCategoryName === "" ? null : superCategoryName
-            };
-
-            fetch('http://localhost:8080/api/categories/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || "Failed to create category");
-                }
-                return response.json();
-            })
-            .then(() => {
-                toggleForm(null);
-                fetchCategories();
-            })
-            .catch(error => {
-                document.getElementById('create-category-msg').innerText = error.message;
-            });
-        }
 
         function addProduct() {
             const payload = {
@@ -659,6 +738,10 @@
                 categoryId: parseInt(document.getElementById('add-product-category').value, 10) || null
             };
 
+            const msgBox = document.getElementById('product-msg');
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
             fetch('http://localhost:8080/api/products/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -666,19 +749,271 @@
             })
             .then(async response => {
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message);
+                    let errorMessage = `Server error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        
+                        // Handle standard Spring Boot error formats
+                        if (errorData.message) errorMessage = errorData.message;
+                        if (errorData.detail) errorMessage = errorData.detail;
+                        
+                        // Handle Spring @Valid FieldError arrays
+                        if (errorData.errors && Array.isArray(errorData.errors)) {
+                            errorMessage = errorData.errors
+                                .map(err => err.defaultMessage || err.message || err.code)
+                                .join('\n');
+                        }
+                    } catch (e) {
+                        const text = await response.text();
+                        if (text) errorMessage = text;
+                    }
+                    throw new Error(errorMessage);
                 }
                 return response.json();
             })
             .then(createdProduct => {
-                toggleForm(null);
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'Product created successfully!';
+                
+                setTimeout(() => {
+                    toggleForm(null);
+                    if (msgBox.innerText.includes('successfully')) {
+                        msgBox.innerText = '';
+                    }
+                }, 1500);
+
                 if (currentCategoryId !== null && createdProduct.categoryId === currentCategoryId) {
                     fetchProducts(currentCategoryId);
                 }
             })
             .catch(error => {
-                document.getElementById('add-product-msg').innerText = error.message;
+                msgBox.style.color = 'red';
+                msgBox.innerText = error.message;
+            });
+        }
+
+        function deleteProduct() {
+            const nameInput = document.getElementById('delete-product-name').value.trim();
+            const msgBox = document.getElementById('product-msg');
+
+            if (!nameInput) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Please enter a product name.";
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/products/delete/${encodeURIComponent(nameInput)}`, {
+                method: 'DELETE'
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.message || "Failed to delete product");
+                }
+                msgBox.style.color = "green";
+                msgBox.innerText = "Product deleted successfully.";
+                
+                if (currentCategoryId !== null) {
+                    fetchProducts(currentCategoryId);
+                }
+            })
+            .catch(error => {
+                msgBox.style.color = "red";
+                msgBox.innerText = error.message;
+            });
+        }
+
+        function createCategory() {
+            const name = document.getElementById('create-category-name').value.trim();
+            const superCategoryName = document.getElementById('create-category-supername').value;
+            const msgBox = document.getElementById('category-msg');
+
+            const payload = {
+                name: name,
+                superCategoryName: superCategoryName === "" ? null : superCategoryName
+            };
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            fetch('http://localhost:8080/api/categories/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    let errorMessage = `Server error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) errorMessage = errorData.message;
+                        if (errorData.detail) errorMessage = errorData.detail;
+                        if (errorData.errors && Array.isArray(errorData.errors)) {
+                            errorMessage = errorData.errors.map(err => err.defaultMessage || err.message || err.code).join('\n');
+                        }
+                    } catch (e) {
+                        const text = await response.text();
+                        if (text) errorMessage = text;
+                    }
+                    throw new Error(errorMessage);
+                }
+                return response.json();
+            })
+            .then(() => {
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'Category created successfully!';
+                
+                setTimeout(() => {
+                    toggleForm(null);
+                    if (msgBox.innerText.includes('successfully')) {
+                        msgBox.innerText = '';
+                    }
+                }, 1500);
+
+                fetchCategories();
+            })
+            .catch(error => {
+                msgBox.style.color = 'red';
+                msgBox.innerText = error.message;
+            });
+        }
+
+        function deleteCategory() {
+            const nameInput = document.getElementById('delete-category-name').value.trim();
+            const msgBox = document.getElementById('category-msg');
+
+            if (!nameInput) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Please enter a category name.";
+                return;
+            }
+
+            const category = allCategories.find(c => c.name.toLowerCase() === nameInput.toLowerCase());
+            if (!category) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Category not found.";
+                return;
+            }
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            fetch(`http://localhost:8080/api/categories/delete/${category.id}`, {
+                method: 'DELETE'
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    let errorMessage = `Server error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) errorMessage = errorData.message;
+                        if (errorData.detail) errorMessage = errorData.detail;
+                        if (errorData.errors && Array.isArray(errorData.errors)) {
+                            errorMessage = errorData.errors.map(err => err.defaultMessage || err.message || err.code).join('\n');
+                        }
+                    } catch (e) {
+                        const text = await response.text();
+                        if (text) errorMessage = text;
+                    }
+                    throw new Error(errorMessage);
+                }
+                msgBox.style.color = "green";
+                msgBox.innerText = "Category deleted successfully.";
+                fetchCategories();
+            })
+            .catch(error => {
+                msgBox.style.color = "red";
+                msgBox.innerText = error.message;
+            });
+        }
+
+        function assignCategory() {
+            const targetName = document.getElementById('assign-target-name').value.trim();
+            const superName = document.getElementById('assign-super-name').value.trim();
+            const msgBox = document.getElementById('assign-msg');
+
+            const targetCat = allCategories.find(c => c.name.toLowerCase() === targetName.toLowerCase());
+            const superCat = allCategories.find(c => c.name.toLowerCase() === superName.toLowerCase());
+
+            if (!targetCat || !superCat) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "One or both categories not found.";
+                return;
+            }
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            fetch(`http://localhost:8080/api/categories/${targetCat.id}/assign/${superCat.id}`, {
+                method: 'PUT'
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    let errorMessage = `Server error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) errorMessage = errorData.message;
+                        if (errorData.detail) errorMessage = errorData.detail;
+                        if (errorData.errors && Array.isArray(errorData.errors)) {
+                            errorMessage = errorData.errors.map(err => err.defaultMessage || err.message || err.code).join('\n');
+                        }
+                    } catch (e) {
+                        const text = await response.text();
+                        if (text) errorMessage = text;
+                    }
+                    throw new Error(errorMessage);
+                }
+                msgBox.style.color = "green";
+                msgBox.innerText = "Category assigned successfully.";
+                fetchCategories();
+            })
+            .catch(error => {
+                msgBox.style.color = "red";
+                msgBox.innerText = error.message;
+            });
+        }
+
+        function unassignCategory() {
+            const targetName = document.getElementById('unassign-target-name').value.trim();
+            const msgBox = document.getElementById('unassign-msg');
+
+            const targetCat = allCategories.find(c => c.name.toLowerCase() === targetName.toLowerCase());
+
+            if (!targetCat) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Category not found.";
+                return;
+            }
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            fetch(`http://localhost:8080/api/categories/${targetCat.id}/unassign`, {
+                method: 'PUT'
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    let errorMessage = `Server error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) errorMessage = errorData.message;
+                        if (errorData.detail) errorMessage = errorData.detail;
+                        if (errorData.errors && Array.isArray(errorData.errors)) {
+                            errorMessage = errorData.errors.map(err => err.defaultMessage || err.message || err.code).join('\n');
+                        }
+                    } catch (e) {
+                        const text = await response.text();
+                        if (text) errorMessage = text;
+                    }
+                    throw new Error(errorMessage);
+                }
+                msgBox.style.color = "green";
+                msgBox.innerText = "Category unassigned successfully.";
+                fetchCategories();
+            })
+            .catch(error => {
+                msgBox.style.color = "red";
+                msgBox.innerText = error.message;
             });
         }
     </script>

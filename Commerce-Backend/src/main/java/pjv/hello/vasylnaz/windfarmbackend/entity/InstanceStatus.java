@@ -4,5 +4,6 @@ public enum InstanceStatus {
     AVAILABLE,
     RESERVED,
     SOLD,
-    DEFECTIVE
+    DEFECTIVE,
+    ARCHIVED
 }

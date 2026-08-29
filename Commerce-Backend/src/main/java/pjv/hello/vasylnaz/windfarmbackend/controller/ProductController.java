@@ -56,4 +56,10 @@ public class ProductController {
         Product product = productService.assignCategory(request);
         return ResponseEntity.status(HttpStatus.OK).body(productService.mapToResponse(product));
     }
+
+
+    @DeleteMapping("/delete/{name}")
+    public ResponseEntity<ProductResponse> deleteProduct(@PathVariable String name) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.deleteProduct(name));
+    }
 }

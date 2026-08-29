@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductInstancesRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductRequest;
+import pjv.hello.vasylnaz.windfarmbackend.entity.InstanceStatus;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductInstanceRepository;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductRepository;
@@ -91,5 +92,29 @@ class ProductServiceTest {
 
         productService.createNewProductInstances(request2);
         assertEquals(10, productInstanceRepository.findByProductName("Test Laptop").size());
+    }
+
+
+    @Test
+    void deleteProduct(){
+        CreateProductRequest request1 = new CreateProductRequest(
+                "Test Laptop",
+                "A powerful testing machine",
+                "http://www.example.com",
+                1200.00,
+                null
+        );
+
+        Product product = productService.addProduct(request1);
+
+        CreateProductInstancesRequest request2 = new CreateProductInstancesRequest(
+                product.getId(),
+                10
+        );
+
+        productService.createNewProductInstances(request2);
+        productService.deleteProduct(product.getId());
+
+        assertEquals(10, productInstanceRepository.findByProductIdAndStatus(product.getId(), InstanceStatus.ARCHIVED).size());
     }
 }

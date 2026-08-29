@@ -50,6 +50,18 @@ public class ProductInstanceService {
         return productInstanceRepository.saveAll(instances);
     }
 
+    @Transactional
+    public void deleteInstances(Long productId){
+        List<ProductInstance> instances = productInstanceRepository
+                .findByProductIdAndStatus(productId, InstanceStatus.AVAILABLE);
+
+        for(ProductInstance instance : instances) {
+            instance.setStatus(InstanceStatus.ARCHIVED);
+        }
+
+        productInstanceRepository.saveAll(instances);
+    }
+
     public Long countByProductId(Long productId){
         return productInstanceRepository.countByProductIdAndStatus(productId, InstanceStatus.AVAILABLE);
     }
