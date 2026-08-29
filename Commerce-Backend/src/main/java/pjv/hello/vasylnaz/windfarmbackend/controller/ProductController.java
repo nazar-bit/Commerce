@@ -58,6 +58,12 @@ public class ProductController {
     }
 
 
+    @PutMapping("/un_assign")
+    public ResponseEntity<ProductResponse> unAssignCategory(@Valid @RequestBody AssignCategoryToProductRequest request) {
+        Product product = productService.unAssignCategory(request);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.mapToResponse(product));
+    }
+
     @DeleteMapping("/delete/{name}")
     public ResponseEntity<ProductResponse> deleteProduct(@PathVariable String name) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.deleteProduct(name));

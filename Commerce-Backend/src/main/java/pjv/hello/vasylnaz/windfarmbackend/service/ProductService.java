@@ -12,7 +12,9 @@ import pjv.hello.vasylnaz.windfarmbackend.entity.ProductInstance;
 import pjv.hello.vasylnaz.windfarmbackend.repository.CategoryRepository;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductRepository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,6 +72,40 @@ public class ProductService {
             category = category.getSuperCategory();
         }
         return productRepository.save(product);
+    }
+
+
+    @Transactional
+    public Product unAssignCategory(AssignCategoryToProductRequest request) {
+        Product product = productRepository.findById(request.productId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Set<Category> categories = product.getCategories();
+        if(categories.size() == 1){
+            throw new RuntimeException("Deleting this category will result in product having no categories");
+        }
+
+        List<Category> categoryIdsToUnassign = new ArrayList<>();
+        collectSubcategoryIds(category, categoryIdsToUnassign);
+
+        product.getCategories().removeAll(categoryIdsToUnassign);
+
+        if(categories.isEmpty()){
+            throw new RuntimeException("Deleting this category will result in product having no categories");
+        }
+
+        return productRepository.save(product);
+    }
+
+
+    private void collectSubcategoryIds(Category parent, List<Category> collector) {
+        collector.add(parent);
+        List<Category> subcategories = categoryRepository.findBySuperCategoryId(parent.getId());
+        for (Category sub : subcategories) {
+            collectSubcategoryIds(sub, collector);
+        }
     }
 
 

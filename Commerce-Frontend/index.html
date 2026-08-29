@@ -299,12 +299,12 @@
             <h3>Assign Category</h3>
         </div>
         <div class="input-container">
-            <input type="text" id="assign-target-name" placeholder=" ">
-            <span class="fake-placeholder">Target Category Name<span class="req-star">*</span></span>
+            <input type="text" id="assign-product-name" placeholder=" ">
+            <span class="fake-placeholder">Product Name<span class="req-star">*</span></span>
         </div>
         <div class="input-container">
-            <input type="text" id="assign-super-name" placeholder=" ">
-            <span class="fake-placeholder">New Super Category Name<span class="req-star">*</span></span>
+            <input type="text" id="assign-category-name" placeholder=" ">
+            <span class="fake-placeholder">New Category Name<span class="req-star">*</span></span>
         </div>
         <button onclick="assignCategory()">Submit (Assign)</button>
         <p id="assign-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
@@ -318,8 +318,12 @@
             <h3>Unassign Category</h3>
         </div>
         <div class="input-container">
-            <input type="text" id="unassign-target-name" placeholder=" ">
-            <span class="fake-placeholder">Target Category Name<span class="req-star">*</span></span>
+            <input type="text" id="unassign-product-name" placeholder=" ">
+            <span class="fake-placeholder">Product Name<span class="req-star">*</span></span>
+        </div>
+        <div class="input-container">
+            <input type="text" id="unassign-category-name" placeholder=" ">
+            <span class="fake-placeholder">Category Name<span class="req-star">*</span></span>
         </div>
         <button onclick="unassignCategory()">Submit (Unassign)</button>
         <p id="unassign-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
@@ -562,7 +566,7 @@
             });
         }
 
-        function fetchProducts(categoryId) {
+        function fetchProducts(categoryId, callback) {
             currentCategoryId = categoryId;
             const productContainer = document.getElementById('product-list');
             productContainer.innerHTML = 'Loading...';
@@ -572,9 +576,11 @@
                 .then(products => {
                     currentProducts = products || [];
                     renderProducts();
+                    if (typeof callback === 'function') callback();
                 })
                 .catch(error => {
                     productContainer.innerHTML = 'Error loading products.';
+                    if (typeof callback === 'function') callback();
                 });
         }
 
@@ -728,101 +734,6 @@
             });
         }
 
-
-        function addProduct() {
-            const payload = {
-                name: document.getElementById('add-product-name').value,
-                description: document.getElementById('add-product-description').value,
-                imageUrl: document.getElementById('add-product-imageurl').value,
-                price: parseFloat(document.getElementById('add-product-price').value) || 0,
-                categoryId: parseInt(document.getElementById('add-product-category').value, 10) || null
-            };
-
-            const msgBox = document.getElementById('product-msg');
-            msgBox.style.color = 'blue';
-            msgBox.innerText = 'Processing...';
-
-            fetch('http://localhost:8080/api/products/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    let errorMessage = `Server error: ${response.status}`;
-                    try {
-                        const errorData = await response.json();
-                        
-                        // Handle standard Spring Boot error formats
-                        if (errorData.message) errorMessage = errorData.message;
-                        if (errorData.detail) errorMessage = errorData.detail;
-                        
-                        // Handle Spring @Valid FieldError arrays
-                        if (errorData.errors && Array.isArray(errorData.errors)) {
-                            errorMessage = errorData.errors
-                                .map(err => err.defaultMessage || err.message || err.code)
-                                .join('\n');
-                        }
-                    } catch (e) {
-                        const text = await response.text();
-                        if (text) errorMessage = text;
-                    }
-                    throw new Error(errorMessage);
-                }
-                return response.json();
-            })
-            .then(createdProduct => {
-                msgBox.style.color = 'green';
-                msgBox.innerText = 'Product created successfully!';
-                
-                setTimeout(() => {
-                    toggleForm(null);
-                    if (msgBox.innerText.includes('successfully')) {
-                        msgBox.innerText = '';
-                    }
-                }, 1500);
-
-                if (currentCategoryId !== null && createdProduct.categoryId === currentCategoryId) {
-                    fetchProducts(currentCategoryId);
-                }
-            })
-            .catch(error => {
-                msgBox.style.color = 'red';
-                msgBox.innerText = error.message;
-            });
-        }
-
-        function deleteProduct() {
-            const nameInput = document.getElementById('delete-product-name').value.trim();
-            const msgBox = document.getElementById('product-msg');
-
-            if (!nameInput) {
-                msgBox.style.color = "red";
-                msgBox.innerText = "Please enter a product name.";
-                return;
-            }
-
-            fetch(`http://localhost:8080/api/products/delete/${encodeURIComponent(nameInput)}`, {
-                method: 'DELETE'
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    const err = await response.json().catch(() => ({}));
-                    throw new Error(err.message || "Failed to delete product");
-                }
-                msgBox.style.color = "green";
-                msgBox.innerText = "Product deleted successfully.";
-                
-                if (currentCategoryId !== null) {
-                    fetchProducts(currentCategoryId);
-                }
-            })
-            .catch(error => {
-                msgBox.style.color = "red";
-                msgBox.innerText = error.message;
-            });
-        }
-
         function createCategory() {
             const name = document.getElementById('create-category-name').value.trim();
             const superCategoryName = document.getElementById('create-category-supername').value;
@@ -862,14 +773,6 @@
             .then(() => {
                 msgBox.style.color = 'green';
                 msgBox.innerText = 'Category created successfully!';
-                
-                setTimeout(() => {
-                    toggleForm(null);
-                    if (msgBox.innerText.includes('successfully')) {
-                        msgBox.innerText = '';
-                    }
-                }, 1500);
-
                 fetchCategories();
             })
             .catch(error => {
@@ -922,63 +825,23 @@
                 fetchCategories();
             })
             .catch(error => {
-                msgBox.style.color = "red";
+                msgBox.style.color = 'red';
                 msgBox.innerText = error.message;
             });
         }
 
         function assignCategory() {
-            const targetName = document.getElementById('assign-target-name').value.trim();
-            const superName = document.getElementById('assign-super-name').value.trim();
+            const productName = document.getElementById('assign-product-name').value.trim();
+            const categoryName = document.getElementById('assign-category-name').value.trim();
             const msgBox = document.getElementById('assign-msg');
 
-            const targetCat = allCategories.find(c => c.name.toLowerCase() === targetName.toLowerCase());
-            const superCat = allCategories.find(c => c.name.toLowerCase() === superName.toLowerCase());
-
-            if (!targetCat || !superCat) {
+            if (!productName || !categoryName) {
                 msgBox.style.color = "red";
-                msgBox.innerText = "One or both categories not found.";
+                msgBox.innerText = "Both product and category names are required.";
                 return;
             }
 
-            msgBox.style.color = 'blue';
-            msgBox.innerText = 'Processing...';
-
-            fetch(`http://localhost:8080/api/categories/${targetCat.id}/assign/${superCat.id}`, {
-                method: 'PUT'
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    let errorMessage = `Server error: ${response.status}`;
-                    try {
-                        const errorData = await response.json();
-                        if (errorData.message) errorMessage = errorData.message;
-                        if (errorData.detail) errorMessage = errorData.detail;
-                        if (errorData.errors && Array.isArray(errorData.errors)) {
-                            errorMessage = errorData.errors.map(err => err.defaultMessage || err.message || err.code).join('\n');
-                        }
-                    } catch (e) {
-                        const text = await response.text();
-                        if (text) errorMessage = text;
-                    }
-                    throw new Error(errorMessage);
-                }
-                msgBox.style.color = "green";
-                msgBox.innerText = "Category assigned successfully.";
-                fetchCategories();
-            })
-            .catch(error => {
-                msgBox.style.color = "red";
-                msgBox.innerText = error.message;
-            });
-        }
-
-        function unassignCategory() {
-            const targetName = document.getElementById('unassign-target-name').value.trim();
-            const msgBox = document.getElementById('unassign-msg');
-
-            const targetCat = allCategories.find(c => c.name.toLowerCase() === targetName.toLowerCase());
-
+            const targetCat = allCategories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
             if (!targetCat) {
                 msgBox.style.color = "red";
                 msgBox.innerText = "Category not found.";
@@ -988,8 +851,142 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetch(`http://localhost:8080/api/categories/${targetCat.id}/unassign`, {
-                method: 'PUT'
+            function searchAndAssign(categoryListIndex) {
+                if (categoryListIndex >= allCategories.length) {
+                    msgBox.style.color = "red";
+                    msgBox.innerText = "Product not found in any category.";
+                    return;
+                }
+
+                const catId = allCategories[categoryListIndex].id;
+                fetch(`http://localhost:8080/api/products?categoryId=${catId}`)
+                    .then(res => res.json())
+                    .then(prods => {
+                        const found = (prods || []).find(p => p.name.toLowerCase() === productName.toLowerCase());
+                        if (found) {
+                            const payload = {
+                                productId: found.id,
+                                categoryId: targetCat.id
+                            };
+                            return fetch('http://localhost:8080/api/products/assign', {
+                                method: 'PUT', 
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            }).then(async resp => {
+                                if (!resp.ok) {
+                                    let errorMessage = `Server error: ${resp.status}`;
+                                    try {
+                                        const errorData = await resp.json();
+                                        if (errorData.message) errorMessage = errorData.message;
+                                    } catch (e) {}
+                                    throw new Error(errorMessage);
+                                }
+                                msgBox.style.color = "green";
+                                msgBox.innerText = "Category assigned successfully.";
+                                if (currentCategoryId !== null) {
+                                    fetchProducts(currentCategoryId);
+                                }
+                            });
+                        } else {
+                            searchAndAssign(categoryListIndex + 1);
+                        }
+                    })
+                    .catch(err => {
+                        msgBox.style.color = "red";
+                        msgBox.innerText = err.message;
+                    });
+            }
+
+            searchAndAssign(0);
+        }
+
+        function unassignCategory() {
+            const productName = document.getElementById('unassign-product-name').value.trim();
+            const categoryName = document.getElementById('unassign-category-name').value.trim();
+            const msgBox = document.getElementById('unassign-msg');
+
+            if (!productName || !categoryName) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Both product name and category name are required.";
+                return;
+            }
+
+            const targetCat = allCategories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+            if (!targetCat) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Category not found.";
+                return;
+            }
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            function searchAndUnassign(categoryListIndex) {
+                if (categoryListIndex >= allCategories.length) {
+                    msgBox.style.color = "red";
+                    msgBox.innerText = "Product not found in any category.";
+                    return;
+                }
+
+                const catId = allCategories[categoryListIndex].id;
+                fetch(`http://localhost:8080/api/products?categoryId=${catId}`)
+                    .then(res => res.json())
+                    .then(prods => {
+                        const found = (prods || []).find(p => p.name.toLowerCase() === productName.toLowerCase());
+                        if (found) {
+                            const payload = {
+                                productId: found.id,
+                                categoryId: targetCat.id
+                            };
+                            return fetch('http://localhost:8080/api/products/un_assign', {
+                                method: 'PUT', 
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            }).then(async resp => {
+                                if (!resp.ok) {
+                                    let errorMessage = `Server error: ${resp.status}`;
+                                    try {
+                                        const errorData = await resp.json();
+                                        if (errorData.message) errorMessage = errorData.message;
+                                    } catch (e) {}
+                                    throw new Error(errorMessage);
+                                }
+                                msgBox.style.color = "green";
+                                msgBox.innerText = "Category unassigned successfully.";
+                                if (currentCategoryId !== null) {
+                                    fetchProducts(currentCategoryId);
+                                }
+                            });
+                        } else {
+                            searchAndUnassign(categoryListIndex + 1);
+                        }
+                    })
+                    .catch(err => {
+                        msgBox.style.color = "red";
+                        msgBox.innerText = err.message;
+                    });
+            }
+
+            searchAndUnassign(0);
+        }
+
+        function addProduct() {
+            const payload = {
+                name: document.getElementById('add-product-name').value,
+                description: document.getElementById('add-product-description').value,
+                imageUrl: document.getElementById('add-product-imageurl').value,
+                price: parseFloat(document.getElementById('add-product-price').value) || 0,
+                categoryId: parseInt(document.getElementById('add-product-category').value, 10) || null
+            };
+
+            const msgBox = document.getElementById('product-msg');
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            fetch('http://localhost:8080/api/products/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             })
             .then(async response => {
                 if (!response.ok) {
@@ -1007,9 +1004,49 @@
                     }
                     throw new Error(errorMessage);
                 }
+                return response.json();
+            })
+            .then(createdProduct => {
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'Product created successfully!';
+                
+                if (currentCategoryId !== null && createdProduct.categoryId === currentCategoryId) {
+                    fetchProducts(currentCategoryId);
+                }
+            })
+            .catch(error => {
+                msgBox.style.color = 'red';
+                msgBox.innerText = error.message;
+            });
+        }
+
+        function deleteProduct() {
+            const nameInput = document.getElementById('delete-product-name').value.trim();
+            const msgBox = document.getElementById('product-msg');
+
+            if (!nameInput) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Please enter a product name.";
+                return;
+            }
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            fetch(`http://localhost:8080/api/products/delete/${encodeURIComponent(nameInput)}`, {
+                method: 'DELETE'
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.message || "Failed to delete product");
+                }
                 msgBox.style.color = "green";
-                msgBox.innerText = "Category unassigned successfully.";
-                fetchCategories();
+                msgBox.innerText = "Product deleted successfully.";
+                
+                if (currentCategoryId !== null) {
+                    fetchProducts(currentCategoryId);
+                }
             })
             .catch(error => {
                 msgBox.style.color = "red";
