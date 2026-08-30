@@ -93,7 +93,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            padding-right: 40px; /* Leaves room for the absolute close button */
+            padding-right: 40px; 
         }
         .form-header h3 { margin: 0; font-size: 18px; }
         .form-mode-btns { display: flex; gap: 5px; }
@@ -111,10 +111,10 @@
             border-color: #333;
         }
 
-        /* Maintainer-only top bar buttons */
-        .maintainer-btn { display: none; padding: 8px 12px; cursor: pointer; }
+        /* Top bar buttons */
+        .maintainer-btn, .customer-btn { display: none; padding: 8px 12px; cursor: pointer; }
 
-        /* "Create Instances" */
+        /* Instance / Buy Controls */
         .instance-controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
         .instance-qty-input { width: 60px; padding: 6px; box-sizing: border-box; }
         .instance-add-btn {
@@ -132,19 +132,28 @@
         }
         .instance-add-btn:hover { background: #218838; }
         .instance-msg { font-size: 12px; margin: 4px 0 0; min-height: 14px; }
+
+        /* Cart & History specific */
+        .cart-item, .history-item { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .history-item { margin-bottom: 10px; }
+        .history-item-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
+        .refund-btn { background: #ffc107; border: none; padding: 4px 8px; cursor: pointer; border-radius: 3px; }
     </style>
 </head>
 <body>
 
     <!-- Authentication Top Bar -->
     <div id="auth-bar">
-        <!-- Top Left: Maintainer Controls -->
+        <!-- Top Left: Controls -->
         <div class="auth-bar-left">
             <button id="nav-product-btn" class="maintainer-btn" onclick="toggleForm('product-menu')">Product</button>
             <button id="nav-category-btn" class="maintainer-btn" onclick="toggleForm('category-menu')">Category</button>
             <button id="nav-assign-btn" class="maintainer-btn" onclick="toggleForm('assign-menu')">Assign Category</button>
             <button id="nav-unassign-btn" class="maintainer-btn" onclick="toggleForm('unassign-menu')">Unassign Category</button>
             <button id="create-instances-btn" class="maintainer-btn" onclick="toggleCreateInstances()">Create Instances</button>
+            
+            <button id="nav-cart-btn" class="customer-btn" onclick="toggleForm('cart-menu')">Cart</button>
+            <button id="nav-history-btn" class="customer-btn" onclick="toggleForm('history-menu')">History</button>
         </div>
 
         <!-- Top Right: Auth Controls -->
@@ -207,7 +216,7 @@
         <p id="reg-msg" style="color:red; font-size: 12px; white-space: pre-wrap;"></p>
     </div>
 
-    <!-- Product Menu (Add / Delete) -->
+    <!-- Product Menu -->
     <div id="product-menu" class="auth-form form-left">
         <button class="close-btn" onclick="toggleForm(null)">&times;</button>
         <div class="form-header">
@@ -218,7 +227,6 @@
             </div>
         </div>
 
-        <!-- Add Product Section -->
         <div id="section-prod-add">
             <div class="input-container">
                 <input type="text" id="add-product-name" placeholder=" ">
@@ -243,7 +251,6 @@
             <button onclick="addProduct()">Submit (Add)</button>
         </div>
 
-        <!-- Delete Product Section -->
         <div id="section-prod-del" style="display: none;">
             <div class="input-container">
                 <input type="text" id="delete-product-name" placeholder=" ">
@@ -254,8 +261,7 @@
         <p id="product-msg" style="color:red; font-size: 12px; white-space: pre-wrap; margin-top: 5px;"></p>
     </div>
 
-
-    <!-- Category Menu (Add / Delete) -->
+    <!-- Category Menu -->
     <div id="category-menu" class="auth-form form-left">
         <button class="close-btn" onclick="toggleForm(null)">&times;</button>
         <div class="form-header">
@@ -266,7 +272,6 @@
             </div>
         </div>
 
-        <!-- Add Category Section -->
         <div id="section-cat-add">
             <div class="input-container">
                 <input type="text" id="create-category-name" placeholder=" ">
@@ -280,7 +285,6 @@
             <button onclick="createCategory()">Submit (Add)</button>
         </div>
 
-        <!-- Delete Category Section -->
         <div id="section-cat-del" style="display: none;">
             <div class="input-container">
                 <input type="text" id="delete-category-name" placeholder=" ">
@@ -290,7 +294,6 @@
         </div>
         <p id="category-msg" style="color:red; font-size: 12px; white-space: pre-wrap; margin-top: 5px;"></p>
     </div>
-
 
     <!-- Assign Category Menu -->
     <div id="assign-menu" class="auth-form form-left">
@@ -310,7 +313,6 @@
         <p id="assign-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
     </div>
 
-
     <!-- Unassign Category Menu -->
     <div id="unassign-menu" class="auth-form form-left">
         <button class="close-btn" onclick="toggleForm(null)">&times;</button>
@@ -327,6 +329,34 @@
         </div>
         <button onclick="unassignCategory()">Submit (Unassign)</button>
         <p id="unassign-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
+    </div>
+
+    <!-- Cart Menu -->
+    <div id="cart-menu" class="auth-form form-left" style="width: 350px;">
+        <button class="close-btn" onclick="toggleForm(null)">&times;</button>
+        <div class="form-header">
+            <h3>Shopping Cart</h3>
+        </div>
+        <div id="cart-items-container" style="max-height: 250px; overflow-y: auto;">
+            <p>Your cart is empty.</p>
+        </div>
+        <div style="display:flex; gap:10px; margin-top: 15px;">
+            <button onclick="processOrder('complete')" style="background:#28a745; color:white; border:none; cursor:pointer; padding:6px 12px;">Complete</button>
+            <button onclick="processOrder('cancel')" style="background:#dc3545; color:white; border:none; cursor:pointer; padding:6px 12px;">Cancel</button>
+        </div>
+        <p id="cart-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
+    </div>
+
+    <!-- Order History Menu -->
+    <div id="history-menu" class="auth-form form-left" style="width: 450px;">
+        <button class="close-btn" onclick="toggleForm(null)">&times;</button>
+        <div class="form-header">
+            <h3>Order History</h3>
+        </div>
+        <div id="history-items-container" style="max-height: 400px; overflow-y: auto;">
+            <p>No past orders found.</p>
+        </div>
+        <p id="history-msg" style="color:red; font-size: 12px; margin-top: 5px;"></p>
     </div>
 
     <!-- Choose items -->
@@ -352,6 +382,8 @@
         let currentCategoryId = null;
         let currentProducts = [];
         let creatingInstances = false;
+        let activeCartOrder = null;
+        let productCache = {}; // productId -> product, accumulated across every category fetched
 
         window.onload = function() {
             checkLocalSession();
@@ -369,12 +401,23 @@
                     populateCategoryDropdown();
                     populateSuperCategoryDropdown();
                     loadCategoryState(currentCategoryId);
+
+                    // Preload all products in the background so Cart and History always have names
+                    allCategories.forEach(category => {
+                        fetch(`http://localhost:8080/api/products?categoryId=${category.id}`)
+                            .then(res => res.json())
+                            .then(products => {
+                                (products || []).forEach(p => { productCache[p.id] = p; });
+                            })
+                            .catch(() => {}); 
+                    });
                 })
                 .catch(error => console.error('Error fetching categories:', error));
         }
 
         function updateAuthUI() {
-            const btns = ['nav-product-btn', 'nav-category-btn', 'nav-assign-btn', 'nav-unassign-btn', 'create-instances-btn'];
+            const maintainerBtns = ['nav-product-btn', 'nav-category-btn', 'nav-assign-btn', 'nav-unassign-btn', 'create-instances-btn'];
+            const customerBtns = ['nav-cart-btn', 'nav-history-btn'];
             
             if (currentUser) {
                 document.getElementById('logged-out-view').style.display = 'none';
@@ -382,20 +425,33 @@
                 document.getElementById('user-info').innerText = `Logged in as: ${currentUser.firstName || currentUser.email || 'User'}`;
 
                 const isMaintainer = currentUser.role === 'MAINTAINER';
-                btns.forEach(id => {
+                const isCustomer = currentUser.role === 'CUSTOMER';
+
+                maintainerBtns.forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) btn.style.display = isMaintainer ? 'inline-block' : 'none';
                 });
+
+                customerBtns.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.style.display = isCustomer ? 'inline-block' : 'none';
+                });
+
+                if (isCustomer) {
+                    initCustomerCart();
+                }
+
             } else {
                 document.getElementById('logged-out-view').style.display = 'flex';
                 document.getElementById('logged-in-view').style.display = 'none';
 
-                btns.forEach(id => {
+                [...maintainerBtns, ...customerBtns].forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) btn.style.display = 'none';
                 });
 
                 creatingInstances = false;
+                activeCartOrder = null;
                 const instBtn = document.getElementById('create-instances-btn');
                 if (instBtn) instBtn.innerText = 'Create Instances';
                 updateProductListHeading();
@@ -403,8 +459,14 @@
             }
         }
 
+
         function toggleForm(formId) {
-            document.querySelectorAll('.auth-form').forEach(form => form.style.display = 'none');
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.style.display = 'none';
+                form.querySelectorAll('input, textarea').forEach(input => input.value = '');
+                form.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+            });
+            
             document.querySelectorAll('.auth-form p').forEach(p => p.innerText = '');
 
             if (creatingInstances) {
@@ -422,6 +484,12 @@
                     if (['product-menu', 'category-menu', 'assign-menu', 'unassign-menu'].includes(formId)) {
                         fetchCategories();
                     }
+                    if (formId === 'cart-menu') {
+                        renderCart();
+                    }
+                    if (formId === 'history-menu') {
+                        renderHistory();
+                    }
                 }
             }
         }
@@ -429,10 +497,8 @@
         function switchTab(menu, mode) {
             document.getElementById(`btn-${menu}-add`).classList.toggle('active', mode === 'add');
             document.getElementById(`btn-${menu}-del`).classList.toggle('active', mode === 'del');
-
             document.getElementById(`section-${menu}-add`).style.display = (mode === 'add') ? 'block' : 'none';
             document.getElementById(`section-${menu}-del`).style.display = (mode === 'del') ? 'block' : 'none';
-            
             let msgBox = document.getElementById(`${menu === 'prod' ? 'product' : 'category'}-msg`);
             if (msgBox) msgBox.innerText = '';
         }
@@ -463,9 +529,7 @@
                 setSession(accountResponse);
                 toggleForm(null);
             })
-            .catch(error => {
-                document.getElementById('reg-msg').innerText = error.message;
-            });
+            .catch(error => { document.getElementById('reg-msg').innerText = error.message; });
         }
 
         function login() {
@@ -490,9 +554,7 @@
                 setSession(accountResponse);
                 toggleForm(null);
             })
-            .catch(error => {
-                document.getElementById('login-msg').innerText = error.message;
-            });
+            .catch(error => { document.getElementById('login-msg').innerText = error.message; });
         }
 
         function setSession(accountData) {
@@ -514,7 +576,6 @@
             localStorage.removeItem('windfarm_user');
             updateAuthUI();
         }
-
 
         window.addEventListener('popstate', function(event) {
             const categoryId = event.state && event.state.id ? event.state.id : null;
@@ -575,6 +636,7 @@
                 .then(response => response.json())
                 .then(products => {
                     currentProducts = products || [];
+                    currentProducts.forEach(p => { productCache[p.id] = p; });
                     renderProducts();
                     if (typeof callback === 'function') callback();
                 })
@@ -598,23 +660,440 @@
                 div.className = 'product-card';
                 const currentStock = product.instanceCount || 0; 
 
-                const instanceControls = creatingInstances ? `
-                    <div class="instance-controls">
-                        <input type="number" class="instance-qty-input" id="instance-qty-${product.id}" min="1" step="1" value="1">
-                        <button class="instance-add-btn" onclick="addProductInstance(${product.id})" title="Add instance">+</button>
-                    </div>
-                    <p class="instance-msg" id="instance-msg-${product.id}"></p>
-                ` : '';
+                let actionControls = '';
+                
+                if (currentUser && currentUser.role === 'MAINTAINER' && creatingInstances) {
+                    actionControls = `
+                        <div class="instance-controls">
+                            <input type="number" class="instance-qty-input" id="instance-qty-${product.id}" min="1" step="1" value="1">
+                            <button class="instance-add-btn" onclick="addProductInstance(${product.id})" title="Add instance">+</button>
+                        </div>
+                        <p class="instance-msg" id="instance-msg-${product.id}"></p>
+                    `;
+                } else if (currentUser && currentUser.role === 'CUSTOMER') {
+                    actionControls = `
+                        <div class="instance-controls">
+                            <input type="number" class="instance-qty-input" id="buy-qty-${product.id}" min="1" step="1" value="1" max="${currentStock}">
+                            <button style="padding:6px 12px; cursor:pointer; background:#007bff; color:white; border:none; border-radius:3px;" onclick="addToCart(${product.id})">Buy</button>
+                        </div>
+                        <p class="instance-msg" id="buy-msg-${product.id}"></p>
+                    `;
+                }
 
                 div.innerHTML = `
                     <h4>${product.name} <span style="font-size:12px; color:#555; background:#eee; padding:2px 6px; border-radius:4px; margin-left:8px;" id="stock-badge-${product.id}">Stock: ${currentStock}</span></h4>
                     <p>Price: $${product.price}</p>
                     <p>${product.description || ''}</p>
-                    ${instanceControls}
+                    ${actionControls}
                 `;
                 productContainer.appendChild(div);
             });
         }
+
+        // --- Customer Cart Logic ---
+
+        function initCustomerCart() {
+            const accountId = currentUser.id || currentUser.accountId;
+            if (!accountId) return;
+            
+            fetch(`http://localhost:8080/api/orders/accounts/${accountId}`)
+                .then(res => res.json())
+                .then(orders => {
+                    activeCartOrder = (orders || []).find(o => o.status === 'IN_PROGRESS') || null;
+                    renderCart();
+                })
+                .catch(() => { activeCartOrder = null; });
+        }
+
+        let isCartInitializing = false;
+
+        function addToCart(productId) {
+            const qtyInput = document.getElementById(`buy-qty-${productId}`);
+            const msgBox = document.getElementById(`buy-msg-${productId}`);
+            let quantity = parseInt(qtyInput.value, 10) || 1;
+            if (quantity < 1) quantity = 1;
+            const maxBuyable = qtyInput.max ? parseInt(qtyInput.max, 10) : null;
+            if (maxBuyable && quantity > maxBuyable) quantity = maxBuyable;
+            qtyInput.value = quantity;
+
+            if (!currentUser) {
+                msgBox.style.color = "red";
+                msgBox.innerText = "Please sign in first.";
+                return;
+            }
+
+            if (isCartInitializing) {
+                msgBox.style.color = 'orange';
+                msgBox.innerText = 'Initializing cart, please wait...';
+                return;
+            }
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Adding to cart...';
+
+            const accountId = currentUser.id || currentUser.accountId;
+
+            if (!activeCartOrder) {
+                isCartInitializing = true;
+                
+                fetch('http://localhost:8080/api/orders/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accountId: accountId })
+                })
+                .then(async res => {
+                    if (!res.ok) {
+                        const text = await res.text();
+                        try { 
+                            const errData = JSON.parse(text); 
+                            
+                            if (errData.message === "User already has an active order") {
+                                return "RECOVER";
+                            }
+                            
+                            if (errData.errors && Array.isArray(errData.errors)) {
+                                throw new Error(errData.errors.map(e => e.defaultMessage || e.message).join('\n'));
+                            }
+                            throw new Error(errData.message || errData.detail || "Failed to initialize cart"); 
+                        } 
+                        catch(e) { throw new Error(e.message || text); }
+                    }
+                    return res.json();
+                })
+                .then(orderOrDirective => {
+                    if (orderOrDirective === "RECOVER") {
+                        return fetch(`http://localhost:8080/api/orders/accounts/${accountId}`)
+                            .then(res => res.json())
+                            .then(orders => {
+                                activeCartOrder = (orders || []).find(o => o.status === 'IN_PROGRESS');
+                                if (!activeCartOrder) {
+                                    throw new Error("Sync failed. No IN_PROGRESS order found.");
+                                }
+                                isCartInitializing = false;
+                                dispatchCartItem(productId, quantity, msgBox);
+                            });
+                    } else {
+                        activeCartOrder = orderOrDirective; 
+                        isCartInitializing = false; 
+                        dispatchCartItem(productId, quantity, msgBox);
+                    }
+                })
+                .catch(err => { 
+                    isCartInitializing = false;
+                    msgBox.style.color = 'red'; 
+                    msgBox.innerText = err.message; 
+                });
+            } else {
+                dispatchCartItem(productId, quantity, msgBox);
+            }
+        }
+
+        function dispatchCartItem(productId, quantity, msgBox) {
+            const currentOrderId = activeCartOrder.orderId || activeCartOrder.id; 
+            
+            const payload = {
+                orderId: currentOrderId,
+                productId: productId,
+                quantity: quantity
+            };
+
+            fetch('http://localhost:8080/api/order_items/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(async res => {
+                if(!res.ok) {
+                    const text = await res.text();
+                    let msg = text;
+                    try { const err = JSON.parse(text); msg = err.message || err.detail || msg; } catch(e) {}
+                    throw new Error(msg);
+                }
+                return res.json();
+            })
+            .then(() => {
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'Added to cart!';
+                setTimeout(() => { if(msgBox.innerText.includes('Added')) msgBox.innerText = ''; }, 2000);
+                
+                // Immediately decrement stock in UI without reload
+                const product = currentProducts.find(p => p.id === productId);
+                if (product) {
+                    product.instanceCount = Math.max(0, (product.instanceCount || 0) - quantity);
+                    const badge = document.getElementById(`stock-badge-${productId}`);
+                    if (badge) badge.innerText = `Stock: ${product.instanceCount}`;
+                    const buyInput = document.getElementById(`buy-qty-${productId}`);
+                    if (buyInput) buyInput.max = product.instanceCount;
+                }
+
+                return fetch(`http://localhost:8080/api/orders/${currentOrderId}`);
+            })
+            .then(res => res.json())
+            .then(order => { 
+                activeCartOrder = order; 
+                renderCart();
+            })
+            .catch(err => { msgBox.style.color = 'red'; msgBox.innerText = err.message; });
+        }
+
+        // Resolves a display name for an order item's product: prefer the name the
+        // backend embedded on the item, fall back to the product cache (built from
+        // every category fetched so far) so cart/history don't just show a bare ID.
+        function resolveProductName(item, productId) {
+            if (item.product && item.product.name) return item.product.name;
+            const cached = productCache[productId];
+            if (cached && cached.name) return cached.name;
+            return `Product #${productId}`;
+        }
+
+        // Groups raw order items by product so buying the same product more than
+        // once (or duplicate rows from the backend) shows as one line with a
+        // combined quantity. Used by both the cart and the order history so they
+        // stay in the same format.
+        function groupOrderItems(items) {
+            const grouped = {};
+            const idsInOrder = [];
+            (items || []).forEach(item => {
+                const resolvedId = item.productId != null ? item.productId : (item.product ? item.product.id : null);
+                if (resolvedId == null) return;
+                const qty = item.quantity || 1;
+                if (grouped[resolvedId]) {
+                    grouped[resolvedId].quantity += qty;
+                } else {
+                    grouped[resolvedId] = { productId: resolvedId, name: resolveProductName(item, resolvedId), quantity: qty };
+                    idsInOrder.push(resolvedId);
+                }
+            });
+            return idsInOrder.map(id => grouped[id]);
+        }
+
+        // Keeps the "Cart" nav button labeled with a live item count, so it's
+        // obvious a purchase landed even before opening the cart panel.
+        function updateCartBadge(groupedItems) {
+            const btn = document.getElementById('nav-cart-btn');
+            if (!btn) return;
+            const totalQty = groupedItems.reduce((sum, item) => sum + item.quantity, 0);
+            btn.innerText = totalQty > 0 ? `Cart (${totalQty})` : 'Cart';
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const msgBox = document.getElementById('cart-msg');
+            msgBox.innerText = '';
+
+            const groupedItems = groupOrderItems(activeCartOrder ? activeCartOrder.items : null);
+            updateCartBadge(groupedItems);
+
+            if (groupedItems.length === 0) {
+                container.innerHTML = '<p>Your cart is empty.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            groupedItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <div style="font-weight:bold;">${item.name}</div>
+                    <div style="font-size:14px; color:#555; margin-bottom: 5px;">Quantity: ${item.quantity}</div>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <input type="number" id="remove-qty-${item.productId}" min="1" max="${item.quantity}" value="1" style="width: 60px; padding: 4px;">
+                        <button style="background:#dc3545; color:white; border:none; border-radius:3px; padding:4px 8px; cursor:pointer;" onclick="unorderItem(${item.productId})" title="Press to unassign this quantity from your cart">Unassign</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function unorderItem(productId) {
+            if (!productId) return;
+            const msgBox = document.getElementById('cart-msg');
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Removing item...';
+            
+            const currentOrderId = activeCartOrder.orderId || activeCartOrder.id;
+            const qtyInput = document.getElementById(`remove-qty-${productId}`);
+            let quantityToRemove = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+            if (!quantityToRemove || quantityToRemove < 1) quantityToRemove = 1;
+            const maxRemovable = qtyInput && qtyInput.max ? parseInt(qtyInput.max, 10) : null;
+            if (maxRemovable && quantityToRemove > maxRemovable) quantityToRemove = maxRemovable;
+            
+            const payload = {
+                orderId: currentOrderId,
+                productId: productId,
+                quantity: quantityToRemove
+            };
+
+            fetch('http://localhost:8080/api/order_items/un_order', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(async res => {
+                if (!res.ok) {
+                    const text = await res.text();
+                    let msg = text;
+                    try { const err = JSON.parse(text); msg = err.message || err.detail || msg; } catch(e) {}
+                    throw new Error(msg);
+                }
+                
+                // Immediately increment stock in UI without reload
+                const product = currentProducts.find(p => p.id === productId);
+                if (product) {
+                    product.instanceCount = (product.instanceCount || 0) + quantityToRemove;
+                    const badge = document.getElementById(`stock-badge-${productId}`);
+                    if (badge) badge.innerText = `Stock: ${product.instanceCount}`;
+                    const buyInput = document.getElementById(`buy-qty-${productId}`);
+                    if (buyInput) buyInput.max = product.instanceCount;
+                }
+
+                return fetch(`http://localhost:8080/api/orders/${currentOrderId}`);
+            })
+            .then(res => res.json())
+            .then(order => {
+                activeCartOrder = order;
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'Item removed.';
+                renderCart();
+                setTimeout(() => { if(msgBox.innerText.includes('removed')) msgBox.innerText = ''; }, 2000);
+            })
+            .catch(err => {
+                msgBox.style.color = 'red';
+                msgBox.innerText = err.message;
+            });
+        }
+
+        function processOrder(action) {
+            const msgBox = document.getElementById('cart-msg');
+            if (!activeCartOrder) {
+                msgBox.style.color = 'red';
+                msgBox.innerText = "No active cart found.";
+                return;
+            }
+
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing...';
+
+            const endpoint = action === 'complete' ? 'complete' : 'cancel';
+            const currentOrderId = activeCartOrder.orderId || activeCartOrder.id;
+            
+            fetch(`http://localhost:8080/api/orders/${endpoint}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: currentOrderId })
+            })
+            .then(async res => {
+                if(!res.ok) {
+                    const text = await res.text();
+                    let msg = text;
+                    try { const err = JSON.parse(text); msg = err.message || err.detail || msg; } catch(e) {}
+                    throw new Error(msg);
+                }
+                return res.json();
+            })
+            .then(() => {
+                activeCartOrder = null; 
+                renderCart(); // clear the panel + badge now that there's no active order
+                msgBox.style.color = 'green';
+                msgBox.innerText = `Order ${action}d successfully.`;
+                if (currentCategoryId !== null) fetchProducts(currentCategoryId); // Refresh stock from cancelled order
+                
+                // Clear the message after 3 seconds instead of closing the form
+                setTimeout(() => { if(msgBox.innerText.includes('successfully')) msgBox.innerText = ''; }, 3000);
+            })
+            .catch(err => {
+                msgBox.style.color = 'red';
+                msgBox.innerText = err.message;
+            });
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-items-container');
+            const msgBox = document.getElementById('history-msg');
+            msgBox.innerText = '';
+            container.innerHTML = '<p>Loading history...</p>';
+
+            fetch(`http://localhost:8080/api/orders/accounts/${currentUser.id}`)
+                .then(res => res.json())
+                .then(orders => {
+                    const pastOrders = (orders || []).filter(o => o.status === 'COMPLETED' || o.status === 'REFUNDED');
+                    
+                    if (pastOrders.length === 0) {
+                        container.innerHTML = '<p>No past orders found.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = '';
+                    pastOrders.forEach(order => {
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        
+                        const currentOrderId = order.orderId || order.id;
+                        
+                        const groupedItems = groupOrderItems(order.items);
+                        let itemsHtml = '';
+                        if (groupedItems.length > 0) {
+                            itemsHtml = groupedItems.map(item => `
+                                <div style="padding: 6px 0; border-top: 1px solid #eee;">
+                                    <div style="font-weight:bold;">${item.name}</div>
+                                    <div style="font-size:14px; color:#555;">Quantity: ${item.quantity}</div>
+                                </div>
+                            `).join('');
+                        } else {
+                            itemsHtml = '<p style="font-size:12px;">No items</p>';
+                        }
+
+                        let refundBtnHtml = '';
+                        if (order.status === 'COMPLETED') {
+                            refundBtnHtml = `<button class="refund-btn" onclick="requestRefund(${currentOrderId})">Request Refund</button>`;
+                        }
+
+                        div.innerHTML = `
+                            <div class="history-item-header">
+                                <span>Order #${currentOrderId}</span>
+                                <span style="color:${order.status === 'COMPLETED' ? 'green' : 'orange'}">${order.status}</span>
+                            </div>
+                            ${itemsHtml}
+                            ${refundBtnHtml}
+                        `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => {
+                    container.innerHTML = '<p style="color:red;">Error loading history.</p>';
+                });
+        }
+
+        function requestRefund(orderId) {
+            const msgBox = document.getElementById('history-msg');
+            msgBox.style.color = 'blue';
+            msgBox.innerText = 'Processing refund...';
+
+            fetch('http://localhost:8080/api/orders/refund', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: orderId })
+            })
+            .then(async res => {
+                if(!res.ok) {
+                    const text = await res.text();
+                    let msg = text;
+                    try { const err = JSON.parse(text); msg = err.message || err.detail || msg; } catch(e) {}
+                    throw new Error(msg);
+                }
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'Refund successful.';
+                renderHistory(); 
+                if (currentCategoryId !== null) fetchProducts(currentCategoryId); // Refresh stock from refunded order
+            })
+            .catch(err => {
+                msgBox.style.color = 'red';
+                msgBox.innerText = err.message;
+            });
+        }
+
+        // --- Maintainer Logic ---
 
         function toggleCreateInstances() {
             document.querySelectorAll('.auth-form').forEach(form => form.style.display = 'none');
@@ -646,10 +1125,7 @@
                 msgEl.innerText = 'Processing...'; 
             }
 
-            const payload = {
-                productId: productId,
-                quantity: quantity
-            };
+            const payload = { productId: productId, quantity: quantity };
 
             fetch(`http://localhost:8080/api/products/create/instances`, {
                 method: 'POST',
@@ -673,18 +1149,12 @@
                 const product = currentProducts.find(p => p.id === productId);
                 if (product) {
                     product.instanceCount = (product.instanceCount || 0) + quantity;
-                    if (stockBadge) {
-                        stockBadge.innerText = `Stock: ${product.instanceCount}`;
-                    }
+                    if (stockBadge) stockBadge.innerText = `Stock: ${product.instanceCount}`;
                 }
                 if (msgEl) {
                     msgEl.style.color = 'green';
                     msgEl.innerText = `Added ${quantity} instance(s). Total is now ${product.instanceCount}.`;
-                    setTimeout(() => {
-                        if (msgEl.innerText.includes('Added')) {
-                            msgEl.innerText = '';
-                        }
-                    }, 3000);
+                    setTimeout(() => { if (msgEl.innerText.includes('Added')) msgEl.innerText = ''; }, 3000);
                 }
             })
             .catch(error => {

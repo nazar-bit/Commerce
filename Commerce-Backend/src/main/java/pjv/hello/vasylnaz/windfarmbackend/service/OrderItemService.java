@@ -110,11 +110,23 @@ public class OrderItemService {
     }
 
 
+    public List<OrderItemResponse> getOrderItemsByOrderId(Long orderId) {
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+        List<OrderItemResponse> responses = new ArrayList<>();
+
+        for(OrderItem item : items) {
+            responses.add(mapToResponse(item));
+        }
+        return responses;
+    }
+
+
     public OrderItemResponse mapToResponse(OrderItem orderItem) {
         return new OrderItemResponse(
             orderItem.getId(),
             orderItem.getProductInstance().getId(),
             orderItem.getOrder().getId(),
+            orderItem.getProductInstance().getProduct().getId(),
             orderItem.getPriceAtPurchase()
         );
     }

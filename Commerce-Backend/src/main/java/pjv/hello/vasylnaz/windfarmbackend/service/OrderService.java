@@ -11,6 +11,8 @@ import pjv.hello.vasylnaz.windfarmbackend.repository.AccountRepository;
 import pjv.hello.vasylnaz.windfarmbackend.repository.OrderRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -95,10 +97,21 @@ public class OrderService {
     }
 
 
-    public OrderResponse findOrderById(long id) {
+    public OrderResponse findOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return mapToResponse(order);
+    }
+
+
+    public List<OrderResponse> findOrderByAccountId(Long accountId) {
+        List<Order> orders = orderRepository.findOrderByAccountId(accountId);
+        List<OrderResponse> orderResponses = new ArrayList<>();
+
+        for(Order order : orders) {
+            orderResponses.add(mapToResponse(order));
+        }
+        return orderResponses;
     }
 
 
@@ -109,7 +122,8 @@ public class OrderService {
                 order.getStatus(),
                 order.getCreatedAt(),
                 order.getResolvedAt(),
-                order.getRefundedAt()
+                order.getRefundedAt(),
+                orderItemService.getOrderItemsByOrderId(order.getId())
         );
     }
 }

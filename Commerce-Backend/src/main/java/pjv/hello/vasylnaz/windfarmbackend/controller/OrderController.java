@@ -10,6 +10,8 @@ import pjv.hello.vasylnaz.windfarmbackend.dto.OrderResponse;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Order;
 import pjv.hello.vasylnaz.windfarmbackend.service.OrderService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -21,9 +23,15 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable long id) {
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
         OrderResponse order = orderService.findOrderById(id);
         return ResponseEntity.status(HttpStatus.OK).body(order);
+    }
+
+    @GetMapping("/accounts/{id}")
+    public ResponseEntity<List<OrderResponse>> getOrdersByAccountId(@PathVariable Long id) {
+        List<OrderResponse> orders = orderService.findOrderByAccountId(id);
+        return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
     @PostMapping("/create")
