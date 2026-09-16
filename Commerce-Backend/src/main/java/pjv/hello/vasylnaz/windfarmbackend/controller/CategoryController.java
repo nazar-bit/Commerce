@@ -38,4 +38,10 @@ public class CategoryController {
         Category category = categoryService.addCategory(createCategoryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.mapToResponse(category));
     }
+
+    @DeleteMapping("/delete/{name}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable String name) {
+        categoryService.deleteCategory(name);
+        return ResponseEntity.ok().build();
+    }
 }

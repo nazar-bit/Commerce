@@ -84,7 +84,7 @@ public class ProductService {
 
         Set<Category> categories = product.getCategories();
         if(categories.size() == 1){
-            throw new RuntimeException("Deleting this category will result in product having no categories");
+            throw new RuntimeException("Unassigning this category will result in product having no categories");
         }
 
         List<Category> categoryIdsToUnassign = new ArrayList<>();
@@ -93,7 +93,7 @@ public class ProductService {
         product.getCategories().removeAll(categoryIdsToUnassign);
 
         if(categories.isEmpty()){
-            throw new RuntimeException("Deleting this category will result in product having no categories");
+            throw new RuntimeException("Unassigning this category will result in product having no categories");
         }
 
         return productRepository.save(product);

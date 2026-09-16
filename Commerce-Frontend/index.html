@@ -1271,7 +1271,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetch(`http://localhost:8080/api/categories/delete/${category.id}`, {
+            fetch(`http://localhost:8080/api/categories/delete/${encodeURIComponent(category.name)}`, {
                 method: 'DELETE'
             })
             .then(async response => {
@@ -1290,9 +1290,26 @@
                     }
                     throw new Error(errorMessage);
                 }
+
                 msgBox.style.color = "green";
                 msgBox.innerText = "Category deleted successfully.";
-                fetchCategories();
+
+                // Remove it from local state right away instead of waiting on
+                // a re-fetch, so the panel updates immediately regardless of
+                // any lag or staleness on the backend's list endpoint.
+                const deletedId = category.id;
+                const deletedParentId = category.superId != null ? category.superId : null;
+                allCategories = allCategories.filter(c => c.id !== deletedId);
+                populateCategoryDropdown();
+                populateSuperCategoryDropdown();
+
+                if (currentCategoryId === deletedId) {
+                    navigateToCategory(deletedParentId);
+                } else {
+                    renderCategories(currentCategoryId);
+                }
+
+                fetchCategories(); // reconcile with the backend in the background
             })
             .catch(error => {
                 msgBox.style.color = 'red';

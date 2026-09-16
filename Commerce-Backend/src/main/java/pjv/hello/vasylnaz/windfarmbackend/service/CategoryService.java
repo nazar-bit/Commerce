@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CategoryResponse;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateCategoryRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Category;
+import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
 import pjv.hello.vasylnaz.windfarmbackend.repository.CategoryRepository;
+import pjv.hello.vasylnaz.windfarmbackend.repository.ProductRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,9 +16,11 @@ import java.util.stream.Collectors;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, ProductRepository productRepository) {
         this.categoryRepository = categoryRepository;
+        this.productRepository = productRepository;
     }
 
     @Transactional
@@ -50,6 +54,31 @@ public class CategoryService {
     public List<CategoryResponse> getCategories() {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public void deleteCategory(String name){
+        Category category = categoryRepository.findByName(name).orElseThrow(
+                ()->new RuntimeException("Category with this name does not exist"));
+
+        List<Product> products = productRepository.findByCategoriesIdAndAvailable(category.getId(), true);
+        for(Product product : products){
+            if(product.getCategories().size() == 1){
+                throw new RuntimeException("Deleting this category will result in product "
+                        + product.getName() + " not having a single category");
+            }
+
+            product.getCategories().remove(category);
+        }
+
+        List<Category> subcategories = categoryRepository.findBySuperCategoryId(category.getId());
+        Category superCategory = category.getSuperCategory();
+        for(Category subcategory : subcategories){
+            subcategory.setSuperCategory(superCategory);
+        }
+
+        categoryRepository.delete(category);
     }
 
 
