@@ -6,7 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "products")
+@Table(
+        name = "products",
+        indexes = {
+                @Index(name = "product_name", columnList = "name")
+        }
+)
 public class Product {
 
     @Id
@@ -29,7 +34,10 @@ public class Product {
     @JoinTable(
             name = "product_categories",
             joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
+            inverseJoinColumns = @JoinColumn(name = "category_id"),
+            indexes = {
+                @Index(name = "idx_pc_category_id", columnList = "category_id")
+            }
     )
     private Set<Category> categories = new HashSet<>();
 

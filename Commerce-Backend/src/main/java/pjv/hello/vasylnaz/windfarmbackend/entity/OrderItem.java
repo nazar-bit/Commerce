@@ -3,15 +3,20 @@ package pjv.hello.vasylnaz.windfarmbackend.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "order_items")
+@Table(
+        name = "order_items",
+        indexes = {
+                @Index(name = "idx_order_item_order_id", columnList = "order_id")
+        }
+    )
 public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "instance_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instance_id", nullable = false, unique = true)
     private ProductInstance productInstance;
 
     @Column(name = "price_at_purchase", nullable = false)

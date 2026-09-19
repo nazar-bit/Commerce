@@ -3,7 +3,12 @@ package pjv.hello.vasylnaz.windfarmbackend.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "product_instances")
+@Table(
+        name = "product_instances",
+        indexes = {
+                @Index(name = "idx_product_instance_product_id", columnList = "product_id")
+        }
+    )
 public class ProductInstance {
 
     @Id
