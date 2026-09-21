@@ -11,11 +11,14 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final CategorySeeder categorySeeder;
     private final ProductSeeder productSeeder;
     private final ProductInstanceSeeder productInstanceSeeder;
+    private final AccountSeeder accountSeeder;
 
-    public DatabaseSeeder(CategorySeeder categorySeeder, ProductSeeder productSeeder, ProductInstanceSeeder productInstanceSeeder) {
+    public DatabaseSeeder(CategorySeeder categorySeeder, ProductSeeder productSeeder,
+                          ProductInstanceSeeder productInstanceSeeder, AccountSeeder accountSeeder) {
         this.categorySeeder = categorySeeder;
         this.productSeeder = productSeeder;
         this.productInstanceSeeder = productInstanceSeeder;
+        this.accountSeeder = accountSeeder;
     }
 
     @Override
@@ -23,5 +26,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         categorySeeder.seed();           // 1. Categories
         productSeeder.seed();            // 2. Products
         productInstanceSeeder.seed();    // 3. Product Instances
+        accountSeeder.seed();            // 4. Accounts (for testing)
     }
 }
