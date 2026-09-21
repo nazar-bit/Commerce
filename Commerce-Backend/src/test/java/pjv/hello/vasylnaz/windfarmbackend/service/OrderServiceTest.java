@@ -102,7 +102,6 @@ public class OrderServiceTest {
         CreateProductRequest requestProd = new CreateProductRequest(
                 "Test",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );
@@ -160,7 +159,6 @@ public class OrderServiceTest {
         CreateProductRequest requestProd = new CreateProductRequest(
                 "Test",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );
@@ -211,7 +209,6 @@ public class OrderServiceTest {
         CreateProductRequest requestProd = new CreateProductRequest(
                 "Test",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );
@@ -265,7 +262,6 @@ public class OrderServiceTest {
         CreateProductRequest requestProd = new CreateProductRequest(
                 "Test",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );

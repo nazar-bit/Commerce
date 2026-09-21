@@ -43,7 +43,6 @@ public class ProductService {
         product.setName(request.name());
         product.setDescription(request.description());
         product.setPrice(request.price());
-        product.setImageUrl(request.imageUrl());
         product.setAvailable(true);
 
         if (request.categoryId() != null) {
@@ -172,7 +171,6 @@ public class ProductService {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getImageUrl(),
                 product.getPrice(),
                 product.getCategories().stream().map(Category::getId).collect(Collectors.toList()),
                 productInstanceService.countByProductId(product.getId())

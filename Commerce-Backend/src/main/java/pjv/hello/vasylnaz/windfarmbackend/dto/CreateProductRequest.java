@@ -9,8 +9,6 @@ public record CreateProductRequest(
 
     String description,
 
-    String imageUrl,
-
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be strictly greater than zero")
     double price,

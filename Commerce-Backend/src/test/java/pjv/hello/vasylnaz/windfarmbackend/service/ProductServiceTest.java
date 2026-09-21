@@ -37,7 +37,6 @@ class ProductServiceTest {
         CreateProductRequest request = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );
@@ -49,7 +48,6 @@ class ProductServiceTest {
 
         assertEquals("Test Laptop", savedProduct.getName());
         assertEquals("A powerful testing machine", savedProduct.getDescription());
-        assertEquals("http://www.example.com", savedProduct.getImageUrl());
         assertEquals(1200.00, savedProduct.getPrice());
     }
 
@@ -59,14 +57,12 @@ class ProductServiceTest {
         CreateProductRequest request1 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );
         CreateProductRequest request2 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful machine",
-                "http://www.example2.com",
                 1300.00,
                 null
         );
@@ -83,7 +79,6 @@ class ProductServiceTest {
         CreateProductRequest request1 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );
@@ -105,7 +100,6 @@ class ProductServiceTest {
         CreateProductRequest request1 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 null
         );
@@ -141,7 +135,6 @@ class ProductServiceTest {
         CreateProductRequest request1 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 category1.getId()
         );
@@ -175,7 +168,6 @@ class ProductServiceTest {
         CreateProductRequest request1 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 category1.getId()
         );
@@ -208,7 +200,6 @@ class ProductServiceTest {
         CreateProductRequest request1 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 category2.getId()
         );
@@ -246,7 +237,6 @@ class ProductServiceTest {
         CreateProductRequest request1 = new CreateProductRequest(
                 "Test Laptop",
                 "A powerful testing machine",
-                "http://www.example.com",
                 1200.00,
                 category2.getId()
         );

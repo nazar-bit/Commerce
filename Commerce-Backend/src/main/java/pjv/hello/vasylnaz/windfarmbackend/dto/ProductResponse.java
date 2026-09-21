@@ -9,8 +9,6 @@ public record ProductResponse(
 
         String description,
 
-        String imageUrl,
-
         double price,
 
         List<Long> categories,
