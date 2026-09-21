@@ -22,9 +22,8 @@ services:
     depends_on:
       - db
     environment:
-      - DB_HOST=db
-      - DB_NAME=ecommerce_db
-      - DB_USER=postgres
+      - DB_NEON_URL=localhost
+      - DB_USER=postgre
       - DB_PASS=4523
       - SEED_DB=true
     ports:
