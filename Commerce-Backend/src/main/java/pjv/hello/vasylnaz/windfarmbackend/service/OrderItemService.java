@@ -90,6 +90,7 @@ public class OrderItemService {
         for(OrderItem item : items) {
             item.getProductInstance().setStatus(InstanceStatus.AVAILABLE);
         }
+        orderItemRepository.deleteAll(items);
     }
 
 
