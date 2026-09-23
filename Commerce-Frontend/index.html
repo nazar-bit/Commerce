@@ -377,6 +377,12 @@
     </div>
 
     <script>
+        // =========================================================================
+        // CHANGE THIS URL TO YOUR LIVE BACKEND SERVER BEFORE DEPLOYING!
+        // Example: 'https://windfarm-backend.onrender.com'
+        // =========================================================================
+        const API_BASE_URL = 'http://localhost:8080'; 
+
         let allCategories = [];
         let currentUser = null; 
         let currentCategoryId = null;
@@ -407,7 +413,7 @@
         }
 
         function fetchCategories() {
-            fetchWithAuth('http://localhost:8080/api/categories')
+            fetchWithAuth(`${API_BASE_URL}/api/categories`)
                 .then(response => response.json())
                 .then(data => {
                     allCategories = data;
@@ -416,7 +422,7 @@
                     loadCategoryState(currentCategoryId);
 
                     allCategories.forEach(category => {
-                        fetchWithAuth(`http://localhost:8080/api/products?categoryId=${category.id}`)
+                        fetchWithAuth(`${API_BASE_URL}/api/products?categoryId=${category.id}`)
                             .then(res => res.json())
                             .then(products => {
                                 (products || []).forEach(p => { productCache[p.id] = p; });
@@ -524,7 +530,7 @@
                 role: document.getElementById('reg-role').value 
             };
 
-            fetch('http://localhost:8080/api/accounts/register', {
+            fetch(`${API_BASE_URL}/api/accounts/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -537,7 +543,6 @@
                 return response.json();
             })
             .then(data => {
-                // Adjust these properties based on how your backend returns the DTO + Token
                 const token = data.token; 
                 const user = data.account || data.user || data;
                 setSession(user, token);
@@ -552,7 +557,7 @@
                 password : document.getElementById('login-password').value
             };
 
-            fetch('http://localhost:8080/api/accounts/login', {
+            fetch(`${API_BASE_URL}/api/accounts/login`, {
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -565,7 +570,6 @@
                 return response.json();
             })
             .then(data => {
-                // Adjust these properties based on how your backend returns the DTO + Token
                 const token = data.token; 
                 const user = data.account || data.user || data;
                 setSession(user, token);
@@ -653,7 +657,7 @@
             const productContainer = document.getElementById('product-list');
             productContainer.innerHTML = 'Loading...';
 
-            fetchWithAuth(`http://localhost:8080/api/products?categoryId=${categoryId}`)
+            fetchWithAuth(`${API_BASE_URL}/api/products?categoryId=${categoryId}`)
                 .then(response => response.json())
                 .then(products => {
                     currentProducts = products || [];
@@ -718,7 +722,7 @@
             const accountId = currentUser.id || currentUser.accountId;
             if (!accountId) return;
             
-            fetchWithAuth(`http://localhost:8080/api/orders/accounts/${accountId}`)
+            fetchWithAuth(`${API_BASE_URL}/api/orders/accounts/${accountId}`)
                 .then(res => res.json())
                 .then(orders => {
                     activeCartOrder = (orders || []).find(o => o.status === 'IN_PROGRESS') || null;
@@ -758,7 +762,7 @@
             if (!activeCartOrder) {
                 isCartInitializing = true;
                 
-                fetchWithAuth('http://localhost:8080/api/orders/create', {
+                fetchWithAuth(`${API_BASE_URL}/api/orders/create`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ accountId: accountId })
@@ -784,7 +788,7 @@
                 })
                 .then(orderOrDirective => {
                     if (orderOrDirective === "RECOVER") {
-                        return fetchWithAuth(`http://localhost:8080/api/orders/accounts/${accountId}`)
+                        return fetchWithAuth(`${API_BASE_URL}/api/orders/accounts/${accountId}`)
                             .then(res => res.json())
                             .then(orders => {
                                 activeCartOrder = (orders || []).find(o => o.status === 'IN_PROGRESS');
@@ -819,7 +823,7 @@
                 quantity: quantity
             };
 
-            fetchWithAuth('http://localhost:8080/api/order_items/order', {
+            fetchWithAuth(`${API_BASE_URL}/api/order_items/order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -847,7 +851,7 @@
                     if (buyInput) buyInput.max = product.instanceCount;
                 }
 
-                return fetchWithAuth(`http://localhost:8080/api/orders/${currentOrderId}`);
+                return fetchWithAuth(`${API_BASE_URL}/api/orders/${currentOrderId}`);
             })
             .then(res => res.json())
             .then(order => { 
@@ -937,7 +941,7 @@
                 quantity: quantityToRemove
             };
 
-            fetchWithAuth('http://localhost:8080/api/order_items/un_order', {
+            fetchWithAuth(`${API_BASE_URL}/api/order_items/un_order`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -959,7 +963,7 @@
                     if (buyInput) buyInput.max = product.instanceCount;
                 }
 
-                return fetchWithAuth(`http://localhost:8080/api/orders/${currentOrderId}`);
+                return fetchWithAuth(`${API_BASE_URL}/api/orders/${currentOrderId}`);
             })
             .then(res => res.json())
             .then(order => {
@@ -989,7 +993,7 @@
             const endpoint = action === 'complete' ? 'complete' : 'cancel';
             const currentOrderId = activeCartOrder.orderId || activeCartOrder.id;
             
-            fetchWithAuth(`http://localhost:8080/api/orders/${endpoint}`, {
+            fetchWithAuth(`${API_BASE_URL}/api/orders/${endpoint}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderId: currentOrderId })
@@ -1024,7 +1028,7 @@
             msgBox.innerText = '';
             container.innerHTML = '<p>Loading history...</p>';
 
-            fetchWithAuth(`http://localhost:8080/api/orders/accounts/${currentUser.id}`)
+            fetchWithAuth(`${API_BASE_URL}/api/orders/accounts/${currentUser.id}`)
                 .then(res => res.json())
                 .then(orders => {
                     const pastOrders = (orders || []).filter(o => o.status === 'COMPLETED' || o.status === 'REFUNDED');
@@ -1080,7 +1084,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing refund...';
 
-            fetchWithAuth('http://localhost:8080/api/orders/refund', {
+            fetchWithAuth(`${API_BASE_URL}/api/orders/refund`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderId: orderId })
@@ -1137,7 +1141,7 @@
 
             const payload = { productId: productId, quantity: quantity };
 
-            fetchWithAuth(`http://localhost:8080/api/products/create/instances`, {
+            fetchWithAuth(`${API_BASE_URL}/api/products/create/instances`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1227,7 +1231,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetchWithAuth('http://localhost:8080/api/categories/create', {
+            fetchWithAuth(`${API_BASE_URL}/api/categories/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1281,7 +1285,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetchWithAuth(`http://localhost:8080/api/categories/delete/${encodeURIComponent(category.name)}`, {
+            fetchWithAuth(`${API_BASE_URL}/api/categories/delete/${encodeURIComponent(category.name)}`, {
                 method: 'DELETE'
             })
             .then(async response => {
@@ -1353,7 +1357,7 @@
                 }
 
                 const catId = allCategories[categoryListIndex].id;
-                fetchWithAuth(`http://localhost:8080/api/products?categoryId=${catId}`)
+                fetchWithAuth(`${API_BASE_URL}/api/products?categoryId=${catId}`)
                     .then(res => res.json())
                     .then(prods => {
                         const found = (prods || []).find(p => p.name.toLowerCase() === productName.toLowerCase());
@@ -1362,7 +1366,7 @@
                                 productId: found.id,
                                 categoryId: targetCat.id
                             };
-                            return fetchWithAuth('http://localhost:8080/api/products/assign', {
+                            return fetchWithAuth(`${API_BASE_URL}/api/products/assign`, {
                                 method: 'PUT', 
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
@@ -1423,7 +1427,7 @@
                 }
 
                 const catId = allCategories[categoryListIndex].id;
-                fetchWithAuth(`http://localhost:8080/api/products?categoryId=${catId}`)
+                fetchWithAuth(`${API_BASE_URL}/api/products?categoryId=${catId}`)
                     .then(res => res.json())
                     .then(prods => {
                         const found = (prods || []).find(p => p.name.toLowerCase() === productName.toLowerCase());
@@ -1432,7 +1436,7 @@
                                 productId: found.id,
                                 categoryId: targetCat.id
                             };
-                            return fetchWithAuth('http://localhost:8080/api/products/un_assign', {
+                            return fetchWithAuth(`${API_BASE_URL}/api/products/un_assign`, {
                                 method: 'PUT', 
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
@@ -1477,7 +1481,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetchWithAuth('http://localhost:8080/api/products/create', {
+            fetchWithAuth(`${API_BASE_URL}/api/products/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1527,7 +1531,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetchWithAuth(`http://localhost:8080/api/products/delete/${encodeURIComponent(nameInput)}`, {
+            fetchWithAuth(`${API_BASE_URL}/api/products/delete/${encodeURIComponent(nameInput)}`, {
                 method: 'DELETE'
             })
             .then(async response => {
