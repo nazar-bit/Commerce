@@ -3,6 +3,7 @@ package pjv.hello.vasylnaz.windfarmbackend.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateOrderRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.OrderRequest;
@@ -22,36 +23,42 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MAINTAINER')")
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
         OrderResponse order = orderService.findOrderById(id);
         return ResponseEntity.status(HttpStatus.OK).body(order);
     }
 
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MAINTAINER')")
     @GetMapping("/accounts/{id}")
     public ResponseEntity<List<OrderResponse>> getOrdersByAccountId(@PathVariable Long id) {
         List<OrderResponse> orders = orderService.findOrderByAccountId(id);
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/create")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest) {
         Order order = orderService.createOrder(createOrderRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.mapToResponse(order));
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/cancel")
     public ResponseEntity<OrderResponse> cancelOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.cancelOrder(orderRequest);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.mapToResponse(order));
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/complete")
     public ResponseEntity<OrderResponse> completeOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.completeOrder(orderRequest);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.mapToResponse(order));
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/refund")
     public ResponseEntity<OrderResponse> refundOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.refundOrder(orderRequest);

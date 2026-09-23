@@ -383,7 +383,7 @@
         let currentProducts = [];
         let creatingInstances = false;
         let activeCartOrder = null;
-        let productCache = {}; // productId -> product, accumulated across every category fetched
+        let productCache = {};
 
         window.onload = function() {
             checkLocalSession();
@@ -393,8 +393,21 @@
             loadCategoryState(categoryId);
         };
 
+        // --- Core JWT Fetch Wrapper ---
+        function fetchWithAuth(url, options = {}) {
+            const token = localStorage.getItem('windfarm_token');
+            options.headers = options.headers || {};
+            
+            // Automatically attach the JWT if it exists in local storage
+            if (token) {
+                options.headers['Authorization'] = 'Bearer ' + token;
+            }
+            
+            return fetch(url, options);
+        }
+
         function fetchCategories() {
-            fetch('https://commerce-backend-9doe.onrender.com/api/categories')
+            fetchWithAuth('http://localhost:8080/api/categories')
                 .then(response => response.json())
                 .then(data => {
                     allCategories = data;
@@ -402,9 +415,8 @@
                     populateSuperCategoryDropdown();
                     loadCategoryState(currentCategoryId);
 
-                    // Preload all products in the background so Cart and History always have names
                     allCategories.forEach(category => {
-                        fetch(`https://commerce-backend-9doe.onrender.com/api/products?categoryId=${category.id}`)
+                        fetchWithAuth(`http://localhost:8080/api/products?categoryId=${category.id}`)
                             .then(res => res.json())
                             .then(products => {
                                 (products || []).forEach(p => { productCache[p.id] = p; });
@@ -424,8 +436,8 @@
                 document.getElementById('logged-in-view').style.display = 'flex';
                 document.getElementById('user-info').innerText = `Logged in as: ${currentUser.firstName || currentUser.email || 'User'}`;
 
-                const isMaintainer = currentUser.role === 'MAINTAINER';
-                const isCustomer = currentUser.role === 'CUSTOMER';
+                const isMaintainer = currentUser.role === 'MAINTAINER' || currentUser.role === 'ROLE_MAINTAINER';
+                const isCustomer = currentUser.role === 'CUSTOMER' || currentUser.role === 'ROLE_CUSTOMER';
 
                 maintainerBtns.forEach(id => {
                     const btn = document.getElementById(id);
@@ -458,7 +470,6 @@
                 if (currentCategoryId !== null) renderProducts();
             }
         }
-
 
         function toggleForm(formId) {
             document.querySelectorAll('.auth-form').forEach(form => {
@@ -513,7 +524,7 @@
                 role: document.getElementById('reg-role').value 
             };
 
-            fetch('https://commerce-backend-9doe.onrender.com/api/accounts/register', {
+            fetch('http://localhost:8080/api/accounts/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -525,8 +536,11 @@
                 }
                 return response.json();
             })
-            .then(accountResponse => {
-                setSession(accountResponse);
+            .then(data => {
+                // Adjust these properties based on how your backend returns the DTO + Token
+                const token = data.token; 
+                const user = data.account || data.user || data;
+                setSession(user, token);
                 toggleForm(null);
             })
             .catch(error => { document.getElementById('reg-msg').innerText = error.message; });
@@ -538,7 +552,7 @@
                 password : document.getElementById('login-password').value
             };
 
-            fetch('https://commerce-backend-9doe.onrender.com/api/accounts/login', {
+            fetch('http://localhost:8080/api/accounts/login', {
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -550,16 +564,22 @@
                 }
                 return response.json();
             })
-            .then(accountResponse => {
-                setSession(accountResponse);
+            .then(data => {
+                // Adjust these properties based on how your backend returns the DTO + Token
+                const token = data.token; 
+                const user = data.account || data.user || data;
+                setSession(user, token);
                 toggleForm(null);
             })
             .catch(error => { document.getElementById('login-msg').innerText = error.message; });
         }
 
-        function setSession(accountData) {
+        function setSession(accountData, token) {
             currentUser = accountData;
             localStorage.setItem('windfarm_user', JSON.stringify(accountData));
+            if (token) {
+                localStorage.setItem('windfarm_token', token);
+            }
             updateAuthUI();
         }
 
@@ -574,6 +594,7 @@
         function logout() {
             currentUser = null;
             localStorage.removeItem('windfarm_user');
+            localStorage.removeItem('windfarm_token');
             updateAuthUI();
         }
 
@@ -632,7 +653,7 @@
             const productContainer = document.getElementById('product-list');
             productContainer.innerHTML = 'Loading...';
 
-            fetch(`https://commerce-backend-9doe.onrender.com/api/products?categoryId=${categoryId}`)
+            fetchWithAuth(`http://localhost:8080/api/products?categoryId=${categoryId}`)
                 .then(response => response.json())
                 .then(products => {
                     currentProducts = products || [];
@@ -662,7 +683,10 @@
 
                 let actionControls = '';
                 
-                if (currentUser && currentUser.role === 'MAINTAINER' && creatingInstances) {
+                const isMaintainer = currentUser && (currentUser.role === 'MAINTAINER' || currentUser.role === 'ROLE_MAINTAINER');
+                const isCustomer = currentUser && (currentUser.role === 'CUSTOMER' || currentUser.role === 'ROLE_CUSTOMER');
+
+                if (isMaintainer && creatingInstances) {
                     actionControls = `
                         <div class="instance-controls">
                             <input type="number" class="instance-qty-input" id="instance-qty-${product.id}" min="1" step="1" value="1">
@@ -670,7 +694,7 @@
                         </div>
                         <p class="instance-msg" id="instance-msg-${product.id}"></p>
                     `;
-                } else if (currentUser && currentUser.role === 'CUSTOMER') {
+                } else if (isCustomer) {
                     actionControls = `
                         <div class="instance-controls">
                             <input type="number" class="instance-qty-input" id="buy-qty-${product.id}" min="1" step="1" value="1" max="${currentStock}">
@@ -690,13 +714,11 @@
             });
         }
 
-        // --- Customer Cart Logic ---
-
         function initCustomerCart() {
             const accountId = currentUser.id || currentUser.accountId;
             if (!accountId) return;
             
-            fetch(`https://commerce-backend-9doe.onrender.com/api/orders/accounts/${accountId}`)
+            fetchWithAuth(`http://localhost:8080/api/orders/accounts/${accountId}`)
                 .then(res => res.json())
                 .then(orders => {
                     activeCartOrder = (orders || []).find(o => o.status === 'IN_PROGRESS') || null;
@@ -736,7 +758,7 @@
             if (!activeCartOrder) {
                 isCartInitializing = true;
                 
-                fetch('https://commerce-backend-9doe.onrender.com/api/orders/create', {
+                fetchWithAuth('http://localhost:8080/api/orders/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ accountId: accountId })
@@ -762,7 +784,7 @@
                 })
                 .then(orderOrDirective => {
                     if (orderOrDirective === "RECOVER") {
-                        return fetch(`https://commerce-backend-9doe.onrender.com/api/orders/accounts/${accountId}`)
+                        return fetchWithAuth(`http://localhost:8080/api/orders/accounts/${accountId}`)
                             .then(res => res.json())
                             .then(orders => {
                                 activeCartOrder = (orders || []).find(o => o.status === 'IN_PROGRESS');
@@ -797,7 +819,7 @@
                 quantity: quantity
             };
 
-            fetch('https://commerce-backend-9doe.onrender.com/api/order_items/order', {
+            fetchWithAuth('http://localhost:8080/api/order_items/order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -816,7 +838,6 @@
                 msgBox.innerText = 'Added to cart!';
                 setTimeout(() => { if(msgBox.innerText.includes('Added')) msgBox.innerText = ''; }, 2000);
                 
-                // Immediately decrement stock in UI without reload
                 const product = currentProducts.find(p => p.id === productId);
                 if (product) {
                     product.instanceCount = Math.max(0, (product.instanceCount || 0) - quantity);
@@ -826,7 +847,7 @@
                     if (buyInput) buyInput.max = product.instanceCount;
                 }
 
-                return fetch(`https://commerce-backend-9doe.onrender.com/api/orders/${currentOrderId}`);
+                return fetchWithAuth(`http://localhost:8080/api/orders/${currentOrderId}`);
             })
             .then(res => res.json())
             .then(order => { 
@@ -836,9 +857,6 @@
             .catch(err => { msgBox.style.color = 'red'; msgBox.innerText = err.message; });
         }
 
-        // Resolves a display name for an order item's product: prefer the name the
-        // backend embedded on the item, fall back to the product cache (built from
-        // every category fetched so far) so cart/history don't just show a bare ID.
         function resolveProductName(item, productId) {
             if (item.product && item.product.name) return item.product.name;
             const cached = productCache[productId];
@@ -846,10 +864,6 @@
             return `Product #${productId}`;
         }
 
-        // Groups raw order items by product so buying the same product more than
-        // once (or duplicate rows from the backend) shows as one line with a
-        // combined quantity. Used by both the cart and the order history so they
-        // stay in the same format.
         function groupOrderItems(items) {
             const grouped = {};
             const idsInOrder = [];
@@ -867,8 +881,6 @@
             return idsInOrder.map(id => grouped[id]);
         }
 
-        // Keeps the "Cart" nav button labeled with a live item count, so it's
-        // obvious a purchase landed even before opening the cart panel.
         function updateCartBadge(groupedItems) {
             const btn = document.getElementById('nav-cart-btn');
             if (!btn) return;
@@ -925,7 +937,7 @@
                 quantity: quantityToRemove
             };
 
-            fetch('https://commerce-backend-9doe.onrender.com/api/order_items/un_order', {
+            fetchWithAuth('http://localhost:8080/api/order_items/un_order', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -938,7 +950,6 @@
                     throw new Error(msg);
                 }
                 
-                // Immediately increment stock in UI without reload
                 const product = currentProducts.find(p => p.id === productId);
                 if (product) {
                     product.instanceCount = (product.instanceCount || 0) + quantityToRemove;
@@ -948,7 +959,7 @@
                     if (buyInput) buyInput.max = product.instanceCount;
                 }
 
-                return fetch(`https://commerce-backend-9doe.onrender.com/api/orders/${currentOrderId}`);
+                return fetchWithAuth(`http://localhost:8080/api/orders/${currentOrderId}`);
             })
             .then(res => res.json())
             .then(order => {
@@ -978,7 +989,7 @@
             const endpoint = action === 'complete' ? 'complete' : 'cancel';
             const currentOrderId = activeCartOrder.orderId || activeCartOrder.id;
             
-            fetch(`https://commerce-backend-9doe.onrender.com/api/orders/${endpoint}`, {
+            fetchWithAuth(`http://localhost:8080/api/orders/${endpoint}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderId: currentOrderId })
@@ -994,12 +1005,11 @@
             })
             .then(() => {
                 activeCartOrder = null; 
-                renderCart(); // clear the panel + badge now that there's no active order
+                renderCart(); 
                 msgBox.style.color = 'green';
                 msgBox.innerText = `Order ${action}d successfully.`;
-                if (currentCategoryId !== null) fetchProducts(currentCategoryId); // Refresh stock from cancelled order
+                if (currentCategoryId !== null) fetchProducts(currentCategoryId); 
                 
-                // Clear the message after 3 seconds instead of closing the form
                 setTimeout(() => { if(msgBox.innerText.includes('successfully')) msgBox.innerText = ''; }, 3000);
             })
             .catch(err => {
@@ -1014,7 +1024,7 @@
             msgBox.innerText = '';
             container.innerHTML = '<p>Loading history...</p>';
 
-            fetch(`https://commerce-backend-9doe.onrender.com/api/orders/accounts/${currentUser.id}`)
+            fetchWithAuth(`http://localhost:8080/api/orders/accounts/${currentUser.id}`)
                 .then(res => res.json())
                 .then(orders => {
                     const pastOrders = (orders || []).filter(o => o.status === 'COMPLETED' || o.status === 'REFUNDED');
@@ -1070,7 +1080,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing refund...';
 
-            fetch('https://commerce-backend-9doe.onrender.com/api/orders/refund', {
+            fetchWithAuth('http://localhost:8080/api/orders/refund', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderId: orderId })
@@ -1085,7 +1095,7 @@
                 msgBox.style.color = 'green';
                 msgBox.innerText = 'Refund successful.';
                 renderHistory(); 
-                if (currentCategoryId !== null) fetchProducts(currentCategoryId); // Refresh stock from refunded order
+                if (currentCategoryId !== null) fetchProducts(currentCategoryId); 
             })
             .catch(err => {
                 msgBox.style.color = 'red';
@@ -1127,7 +1137,7 @@
 
             const payload = { productId: productId, quantity: quantity };
 
-            fetch(`https://commerce-backend-9doe.onrender.com/api/products/create/instances`, {
+            fetchWithAuth(`http://localhost:8080/api/products/create/instances`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1217,7 +1227,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetch('https://commerce-backend-9doe.onrender.com/api/categories/create', {
+            fetchWithAuth('http://localhost:8080/api/categories/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1271,7 +1281,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetch(`https://commerce-backend-9doe.onrender.com/api/categories/delete/${encodeURIComponent(category.name)}`, {
+            fetchWithAuth(`http://localhost:8080/api/categories/delete/${encodeURIComponent(category.name)}`, {
                 method: 'DELETE'
             })
             .then(async response => {
@@ -1294,9 +1304,6 @@
                 msgBox.style.color = "green";
                 msgBox.innerText = "Category deleted successfully.";
 
-                // Remove it from local state right away instead of waiting on
-                // a re-fetch, so the panel updates immediately regardless of
-                // any lag or staleness on the backend's list endpoint.
                 const deletedId = category.id;
                 const deletedParentId = category.superId != null ? category.superId : null;
                 allCategories = allCategories.filter(c => c.id !== deletedId);
@@ -1309,7 +1316,7 @@
                     renderCategories(currentCategoryId);
                 }
 
-                fetchCategories(); // reconcile with the backend in the background
+                fetchCategories(); 
             })
             .catch(error => {
                 msgBox.style.color = 'red';
@@ -1346,7 +1353,7 @@
                 }
 
                 const catId = allCategories[categoryListIndex].id;
-                fetch(`https://commerce-backend-9doe.onrender.com/api/products?categoryId=${catId}`)
+                fetchWithAuth(`http://localhost:8080/api/products?categoryId=${catId}`)
                     .then(res => res.json())
                     .then(prods => {
                         const found = (prods || []).find(p => p.name.toLowerCase() === productName.toLowerCase());
@@ -1355,7 +1362,7 @@
                                 productId: found.id,
                                 categoryId: targetCat.id
                             };
-                            return fetch('https://commerce-backend-9doe.onrender.com/api/products/assign', {
+                            return fetchWithAuth('http://localhost:8080/api/products/assign', {
                                 method: 'PUT', 
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
@@ -1416,7 +1423,7 @@
                 }
 
                 const catId = allCategories[categoryListIndex].id;
-                fetch(`https://commerce-backend-9doe.onrender.com/api/products?categoryId=${catId}`)
+                fetchWithAuth(`http://localhost:8080/api/products?categoryId=${catId}`)
                     .then(res => res.json())
                     .then(prods => {
                         const found = (prods || []).find(p => p.name.toLowerCase() === productName.toLowerCase());
@@ -1425,7 +1432,7 @@
                                 productId: found.id,
                                 categoryId: targetCat.id
                             };
-                            return fetch('https://commerce-backend-9doe.onrender.com/api/products/un_assign', {
+                            return fetchWithAuth('http://localhost:8080/api/products/un_assign', {
                                 method: 'PUT', 
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
@@ -1470,7 +1477,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetch('https://commerce-backend-9doe.onrender.com/api/products/create', {
+            fetchWithAuth('http://localhost:8080/api/products/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1520,7 +1527,7 @@
             msgBox.style.color = 'blue';
             msgBox.innerText = 'Processing...';
 
-            fetch(`https://commerce-backend-9doe.onrender.com/api/products/delete/${encodeURIComponent(nameInput)}`, {
+            fetchWithAuth(`http://localhost:8080/api/products/delete/${encodeURIComponent(nameInput)}`, {
                 method: 'DELETE'
             })
             .then(async response => {

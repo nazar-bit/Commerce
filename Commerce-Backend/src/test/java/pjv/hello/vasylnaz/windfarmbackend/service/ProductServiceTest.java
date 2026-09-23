@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import pjv.hello.vasylnaz.windfarmbackend.dto.AssignCategoryToProductRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateCategoryRequest;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductInstancesRequest;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
+@WithMockUser(roles = "MAINTAINER")
 class ProductServiceTest {
 
     @Autowired

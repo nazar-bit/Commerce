@@ -3,6 +3,7 @@ package pjv.hello.vasylnaz.windfarmbackend.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CategoryResponse;
 import pjv.hello.vasylnaz.windfarmbackend.dto.CreateCategoryRequest;
@@ -21,6 +22,7 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
+
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategory(@PathVariable Long id) {
         CategoryResponse category = categoryService.findById(id);
@@ -33,12 +35,14 @@ public class CategoryController {
         return ResponseEntity.ok(categories);
     }
 
+    @PreAuthorize("hasRole('MAINTAINER')")
     @PostMapping("/create")
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
         Category category = categoryService.addCategory(createCategoryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.mapToResponse(category));
     }
 
+    @PreAuthorize("hasRole('MAINTAINER')")
     @DeleteMapping("/delete/{name}")
     public ResponseEntity<Void> deleteCategory(@PathVariable String name) {
         categoryService.deleteCategory(name);

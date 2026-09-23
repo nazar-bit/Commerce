@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import pjv.hello.vasylnaz.windfarmbackend.dto.*;
 import pjv.hello.vasylnaz.windfarmbackend.entity.*;
 import pjv.hello.vasylnaz.windfarmbackend.repository.AccountRepository;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
+@WithMockUser(roles = "MAINTAINER")
 public class OrderServiceTest {
 
     @Autowired

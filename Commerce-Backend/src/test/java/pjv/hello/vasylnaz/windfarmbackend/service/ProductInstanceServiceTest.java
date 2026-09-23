@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductInstanceRepository;
 import pjv.hello.vasylnaz.windfarmbackend.repository.ProductRepository;
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Transactional
+@WithMockUser(roles = "MAINTAINER")
 public class ProductInstanceServiceTest {
 
     @Autowired

@@ -5,19 +5,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import pjv.hello.vasylnaz.windfarmbackend.dto.CreateProductRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import pjv.hello.vasylnaz.windfarmbackend.dto.RegisterRequest;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Account;
-import pjv.hello.vasylnaz.windfarmbackend.entity.Product;
 import pjv.hello.vasylnaz.windfarmbackend.entity.Role;
 import pjv.hello.vasylnaz.windfarmbackend.repository.AccountRepository;
-
-import javax.swing.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
+@WithMockUser(roles = "MAINTAINER")
 public class AccountServiceTest {
 
     @Autowired

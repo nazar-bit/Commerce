@@ -3,6 +3,7 @@ package pjv.hello.vasylnaz.windfarmbackend.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pjv.hello.vasylnaz.windfarmbackend.dto.OrderItemResponse;
 import pjv.hello.vasylnaz.windfarmbackend.dto.OrderItemsRequest;
@@ -23,12 +24,14 @@ public class OrderItemController {
         this.orderItemService = orderItemService;
     }
 
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'MAINTAINER')")
     @GetMapping("/{id}")
     public ResponseEntity<OrderItemResponse> findById(@PathVariable Long id) {
         OrderItemResponse orderItem = orderItemService.findById(id);
         return ResponseEntity.ok(orderItem);
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/order")
     public ResponseEntity<List<OrderItemResponse>> order(@Valid @RequestBody OrderItemsRequest orderItemsRequest) {
         List<OrderItem> orderItems = orderItemService.orderItems(orderItemsRequest);
@@ -39,6 +42,7 @@ public class OrderItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderItemResponses);
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/un_order")
     public ResponseEntity<Void> unOrder(@RequestBody UnOrderItemsRequest unOrderItemsRequest) {
         orderItemService.unOrderItems(unOrderItemsRequest);
